@@ -9,6 +9,7 @@ find_package(NLopt)
 if (NOT NLopt_FOUND)
   message(FATAL_ERROR "Package NLopt required, but not found!")
 endif()
+link_directories(${NLOPT_LIBRARY_DIRS})
 
 foreach(sample_filename ${samples_list})
   get_filename_component(sample ${sample_filename} NAME_WE)
