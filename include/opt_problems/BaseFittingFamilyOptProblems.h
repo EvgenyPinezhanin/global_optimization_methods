@@ -12,6 +12,8 @@
 #include <general/structures/search_areas/MultiDimensionalSearchArea.h>
 #include <MyMath.h>
 
+// #define DEBUG
+
 class OneDimensionalSupportiveOptProblem : public IBaseOptProblem<opt::OneDimensionalSearchArea, double> {
 public:
     enum class TypeProblem { MIN, MAX };
@@ -181,12 +183,15 @@ void BaseFittingFamilyOptProblems<OptMethod>::calcCoefficients(const std::vector
         }
     }
 
+#if defined( DEBUG )
+    std::cout << "SLE:\n"
     for (size_t i = 0; i < numberCoefficients; ++i) {
         for (size_t j = 0; j < numberCoefficients; ++j) {
             std::cout << std::setprecision(10) << A[i][j] << " ";
         }
         std::cout << std::setprecision(10)  << B[i] << "\n";
     }
+#endif
 
     minimizer.setA(A);
     minimizer.setB(B);
@@ -257,6 +262,14 @@ double BaseFittingFamilyOptProblems<OptMethod>::computeConstraintFunction(const 
         u.setOmega(x);
         u.setCoefficients(coefficients);
 
+    #if defined( DEBUG )
+        std::cout << "Constraint: " << index << " Coeffs: ";    
+        for (size_t k = 0; k < numberCoefficients; ++k) {
+            std::cout << coefficients[k] << " ";
+        }
+        std::cout << "\n";
+    #endif
+
         using Result = typename OptMethod::Result;
         std::unique_ptr<Result> result(static_cast<Result*>(optMethod.createResult()));
         
@@ -270,7 +283,10 @@ double BaseFittingFamilyOptProblems<OptMethod>::computeConstraintFunction(const 
         optMethod.solve(*result);
         maxValue = -result->value;
 
-        // std::cout << maxValue - minValue - 2 * delta << "\n";
+    #if defined( DEBUG )
+        std::cout << "Constraint: " << index " Max value: " << maxValue << "\n";
+        std::cout << "Constraint: " << index " Min value: " << minValue << "\n";
+    #endif
 
         return maxValue - minValue - 2 * delta;
     } else if (index == dimension + 3) {

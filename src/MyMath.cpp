@@ -2,6 +2,8 @@
 
 // #define EIGEN
 
+// #define DEBUG
+
 #if defined( EIGEN )
     #include <Eigen/Dense>
 #endif
@@ -28,6 +30,8 @@ void jordanGaussMethod(const std::vector<std::vector<double>> &A, const std::vec
         BTmp[i] /= max_elem;
     }
 
+#if defined( DEBUG )
+    std::cout << "SLE after normalization:\n";
     for (size_t i = 0; i < size; ++i) {
         for (size_t j = 0; j < size; ++j) {
             std::cout << ATmp[i][j] << " ";
@@ -35,6 +39,7 @@ void jordanGaussMethod(const std::vector<std::vector<double>> &A, const std::vec
         std::cout << BTmp[i] << "\n";
     }
     std::cout << "\n";
+#endif
 
     for (size_t i = 0; i < size; ++i) {
         order[i] = i;
@@ -76,6 +81,8 @@ void jordanGaussMethod(const std::vector<std::vector<double>> &A, const std::vec
             }
         }
 
+    #if defined( DEBUG )
+        std::cout << "Iter: " << i << "SLE:\n";
         for (size_t i = 0; i < size; ++i) {
             for (size_t j = 0; j < size; ++j) {
                 std::cout << ATmp[i][j] << " ";
@@ -83,6 +90,7 @@ void jordanGaussMethod(const std::vector<std::vector<double>> &A, const std::vec
             std::cout << BTmp[i] << "\n";
         }
         std::cout << "\n";
+    #endif
     }
 
     for (size_t i = size - 1; i > 0; --i) {
