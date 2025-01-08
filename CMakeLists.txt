@@ -14,6 +14,9 @@ set(PROJECT_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 include_directories("${PROJECT_INCLUDE}")
 
+# Add mpreal
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/mpreal")
+
 # OUTPUT DIR
 if(CMAKE_BUILD_TYPE STREQUAL Release)
   set(OUT_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE})
