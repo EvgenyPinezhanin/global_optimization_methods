@@ -4,3 +4,6 @@
 [submodule "DiRect"]
 	path = DiRect
 	url = https://github.com/EvgenyPinezhanin/DiRect
+[submodule "mpreal"]
+	path = mpreal
+	url = https://github.com/advanpix/mpreal
