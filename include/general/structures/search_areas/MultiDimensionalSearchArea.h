@@ -11,6 +11,9 @@ namespace opt {
         MultiDimensionalSearchArea(int _dimension = 2, const std::vector<double> &_lowerBound = std::vector<double>(),
                                    const std::vector<double> &_upBound = std::vector<double>())
             : dimension(_dimension), lowerBound(_lowerBound), upBound(_upBound) {};
+
+        MultiDimensionalSearchArea(int _dimension, double _lowerBound, double _upBound)
+            : dimension(_dimension), lowerBound(dimension, _lowerBound), upBound(dimension, _upBound) {};
     };
 }
 
