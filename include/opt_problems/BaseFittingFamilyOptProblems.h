@@ -6,20 +6,26 @@
 #include <memory>
 
 #include <general/classes/opt_methods/IGeneralNumericalOptMethod.h>
-#include <opt_problems/base/IBaseOptProblem.h>
 #include <general/structures/search_areas/OneDimensionalSearchArea.h>
-#include <opt_problems/base/IBaseConstrainedFamilyOptProblems.h>
 #include <general/structures/search_areas/MultiDimensionalSearchArea.h>
+#include <opt_problems/base/IBaseOptProblem.h>
+#include <opt_problems/base/IBaseConstrainedFamilyOptProblems.h>
 #include <MyMath.h>
 
 // #define DEBUG
+
+// #define TIKHONOV_REGULARIZATION
+#if defined( TIKHONOV_REGULARIZATION )
+    #include <opt_problems/base/IBaseConstrainedOptProblem.h>
+    #include <opt_methods/MggsaMethod.h>
+#endif
 
 class OneDimensionalSupportiveOptProblem : public IBaseOptProblem<opt::OneDimensionalSearchArea, double> {
 public:
     enum class TypeProblem { MIN, MAX };
 
 protected:
-    std::vector<double> coefficients, omega;
+    std::vector<real_number> coefficients, omega;
     TypeProblem typeProblem;
 
 public:
@@ -28,16 +34,43 @@ public:
         : IBaseOptProblem<opt::OneDimensionalSearchArea, double>("", 0, _area, std::vector<double>{}, 0.0, 0.0),
           coefficients(), omega(), typeProblem(_typeProblem) {};
 
-    void setCoefficients(const std::vector<double> &_coefficients) { coefficients = _coefficients; };
-    void getCoefficients(std::vector<double> &_coefficients) const { _coefficients = coefficients; };
+    void setCoefficients(const std::vector<real_number> &_coefficients) { coefficients = _coefficients; };
+    void getCoefficients(std::vector<real_number> &_coefficients) const { _coefficients = coefficients; };
 
-    void setOmega(const std::vector<double> &_omega) { omega = _omega; };
-    void getOmega(std::vector<double> &_omega) const { _omega = omega; };
+    void setOmega(const std::vector<real_number> &_omega) { omega = _omega; };
+    void getOmega(std::vector<real_number> &_omega) const { _omega = omega; };
 
     void setTypeProblem(TypeProblem _typeProblem) { typeProblem = _typeProblem; };
 
     double computeObjectiveFunction(const double &x) const override;
 };
+
+#if defined( TIKHONOV_REGULARIZATION )
+class TikhonovFunctional : public IBaseConstrainedOptProblem<opt::MultiDimensionalSearchArea, std::vector<double>> {
+protected:
+    double alpha;
+    Matrix A;
+    std::vector<double> B;
+
+public:
+    TikhonovFunctional(const opt::MultiDimensionalSearchArea &_area = opt::MultiDimensionalSearchArea(), double _alpha = 0.001,
+                       const Matrix &_A = Matrix{}, const std::vector<double> &_B = std::vector<double>{})
+        : IBaseConstrainedOptProblem<opt::MultiDimensionalSearchArea, std::vector<double>>("", 0, 0, _area,
+          std::vector<std::vector<double>>{}, 0.0, 0.0), alpha(_alpha), A(_A), B(_B) {};
+
+    void setAlpha(double _alpha) { alpha = _alpha; };
+    double getAlpha() const { return alpha; };
+
+    void setA(const Matrix &_A) { A = _A; };
+    void getA(Matrix &_A) const { _A = A; };
+
+    void setB(const std::vector<double> &_B) { B = _B; };
+    void getB(std::vector<double> &_B) const { _B = B; };
+
+    double computeObjectiveFunction(const std::vector<double> &x) const override;
+    double computeConstraintFunction(const std::vector<double> &x, size_t index) const override;
+};
+#endif
 
 template<typename OptMethod>
 class BaseFittingFamilyOptProblems :
@@ -53,7 +86,7 @@ protected:
     mutable std::vector<point> testPoints;
 
     size_t numberCoefficients;
-    mutable std::vector<double> coefficients;
+    mutable std::vector<real_number> coefficients;
 
     mutable OptMethod optMethod;
     mutable OneDimensionalSupportiveOptProblem u;
@@ -83,7 +116,7 @@ public:
         const std::vector<double> &_objectiveLipschitzConstant = std::vector<double>{},
         const std::vector<std::vector<double>> &_constraintLipschitzConstants = std::vector<std::vector<double>>{})
         : IBaseConstrainedFamilyOptProblems<opt::MultiDimensionalSearchArea, std::vector<double>>("Fitting Family",
-          _familySize, _dimension + 3, _area, _optimalPoints, _optimalValue, _objectiveLipschitzConstant,
+          _familySize, _dimension + 4, _area, _optimalPoints, _optimalValue, _objectiveLipschitzConstant,
           _constraintLipschitzConstants),
           dimension(_dimension),
           alpha(_alpha), delta(_delta),
@@ -132,7 +165,18 @@ public:
     void getTestPoints(std::vector<point> &_testPoints) const { _testPoints = testPoints; };
 
     size_t getNumberCoefficients() const { return numberCoefficients; };
+
+#if defined( MPFR )
+    void getCoefficients(std::vector<double> &_coefficients) const {
+        size_t size = coefficients.size();
+        _coefficients.resize(coefficients.size());
+        for (size_t i = 0; i < size; ++i) {
+            _coefficients[i] = coefficients[i].toDouble();
+        }
+    };
+#else
     void getCoefficients(std::vector<double> &_coefficients) const { _coefficients = coefficients; };
+#endif
 
     void getOptMethod(OptMethod &_optMethod) const { _optMethod = optMethod; };
     void setOptMethod(const OptMethod &_optMethod) {
@@ -149,28 +193,34 @@ public:
 
 template<typename OptMethod>
 double BaseFittingFamilyOptProblems<OptMethod>::uDerivative(const std::vector<double> &x) const {
-    double result = 0.0;
+    real_number result = 0.0;
 
     size_t numberX = x.size();
     for (size_t i = 0; i < numberX; ++i) {
-        result += coefficients[2 * i] * x[i] * std::cos(x[i] * testPoints[numberTestPoints - 1].x[0]) -
-                  coefficients[2 * i + 1] * x[i] * std::sin(x[i] * testPoints[numberTestPoints - 1].x[0]) ;
+        result += coefficients[2 * i] * x[i] * cos_func(x[i] * testPoints[numberTestPoints - 1].x[0]) -
+                  coefficients[2 * i + 1] * x[i] * sin_func(x[i] * testPoints[numberTestPoints - 1].x[0]) ;
     }
 
+#if defined( MPFR )
+    return result.toDouble();
+#else
     return result;
+#endif
 }
 
 template<typename OptMethod>
 void BaseFittingFamilyOptProblems<OptMethod>::calcCoefficients(const std::vector<double> &x) const {
-    std::vector<std::vector<double>> A(numberCoefficients, std::vector<double>(numberCoefficients, 0));
-    std::vector<double> B(numberCoefficients, 0);
+    std::vector<std::vector<real_number>> A(numberCoefficients, std::vector<real_number>(numberCoefficients, 0.0));
+    std::vector<real_number> B(numberCoefficients, 0.0);
 
-    std::vector<std::function<double(double, double)>> functions{
-        [] (double t, double x) -> double { return std::sin(x * t); },
-        [] (double t, double x) -> double { return std::cos(x * t); }
+    std::vector<std::function<real_number(real_number, real_number)>> functions{
+        [&] (real_number t, real_number x) -> real_number { return sin_func(x * t); },
+        [&] (real_number t, real_number x) -> real_number { return cos_func(x * t); }
     };
 
+#if not defined( TIKHONOV_REGULARIZATION )
     mnk minimizer;
+#endif
 
     for (size_t i = 0; i < numberCoefficients; ++i) {
         for (size_t j = 0; j < numberCoefficients; ++j) {
@@ -184,7 +234,7 @@ void BaseFittingFamilyOptProblems<OptMethod>::calcCoefficients(const std::vector
     }
 
 #if defined( DEBUG )
-    std::cout << "SLE:\n"
+    std::cout << "SLE:\n";
     for (size_t i = 0; i < numberCoefficients; ++i) {
         for (size_t j = 0; j < numberCoefficients; ++j) {
             std::cout << std::setprecision(10) << A[i][j] << " ";
@@ -193,9 +243,56 @@ void BaseFittingFamilyOptProblems<OptMethod>::calcCoefficients(const std::vector
     }
 #endif
 
+#if defined( TIKHONOV_REGULARIZATION )
+    using Parameters = MggsaMethod<TikhonovFunctional>::Parameters;
+    using Result = MggsaMethod<TikhonovFunctional>::GeneralNumericalMethod::Result;
+    using Report = MggsaMethod<TikhonovFunctional>::Report;
+    using TypeSolve = MggsaMethod<TikhonovFunctional>::TypeSolve;
+
+    double alpha = 0.0;
+    double lowerBound = -10.0;
+    double upperBound = 10.0;
+    opt::MultiDimensionalSearchArea searchArea(numberCoefficients, lowerBound, upperBound);
+    TikhonovFunctional tikhonovFunctional(searchArea, alpha, A, B);
+
+    double accuracy = 0.01, error = 0.0, d = 0.01;
+    std::vector<double> reliability(1, 5.0);
+    size_t maxTrials = 40000, maxFevals = 1000000000;
+    size_t density = 12, key = 1, increment = 0;
+    TypeSolve typeSolve = TypeSolve::SOLVE;
+    Parameters mggsaParameters(accuracy, error, maxTrials, maxFevals, reliability,
+                               d, density, key, increment, typeSolve);
+
+    MggsaMethod<TikhonovFunctional> mggsa;
+    mggsa.setParameters(mggsaParameters);
+    mggsa.setProblem(tikhonovFunctional);
+
+    std::unique_ptr<Result> result(static_cast<Result*>(mggsa.createResult()));
+    mggsa.solve(*result);
+
+    coefficients = result->point;
+
+    #if defined( DEBUG )
+        std::cout << "Coeffs: ";    
+        for (size_t k = 0; k < numberCoefficients; ++k) {
+            std::cout << coefficients[k] << " ";
+        }
+        std::cout << "\n";
+        std::cout << "Value: " << tikhonovFunctional.computeObjectiveFunction(coefficients) << "\n";
+    #endif
+#else
     minimizer.setA(A);
     minimizer.setB(B);
     minimizer.solve(coefficients);
+
+    #if defined( DEBUG )
+        std::cout << "Coeffs: ";    
+        for (size_t k = 0; k < numberCoefficients; ++k) {
+            std::cout << coefficients[k] << " ";
+        }
+        std::cout << "\n";
+    #endif
+#endif
 }
 
 template<typename OptMethod>
@@ -250,7 +347,16 @@ double BaseFittingFamilyOptProblems<OptMethod>::computeConstraintFunction(const 
     } else if (index >= dimension - 1 && index < dimension + 2) {
         calcCoefficients(x);
 
+    #if defined( MPFR )
+        std::vector<real_number> x_real(dimension);
+        for (size_t i = 0; i < dimension; ++i) {
+            x_real[i] = x[i];
+        }
+        u.setOmega(x_real);
+    #else
         u.setOmega(x);
+    #endif
+
         u.setCoefficients(coefficients);
         u.setTypeProblem(OneDimensionalSupportiveOptProblem::TypeProblem::MIN);
 
@@ -259,7 +365,16 @@ double BaseFittingFamilyOptProblems<OptMethod>::computeConstraintFunction(const 
     } else if (index == dimension + 2) {
         calcCoefficients(x);
 
+    #if defined( MPFR )
+        std::vector<real_number> x_real(dimension);
+        for (size_t i = 0; i < dimension; ++i) {
+            x_real[i] = x[i];
+        }
+        u.setOmega(x_real);
+    #else
         u.setOmega(x);
+    #endif
+
         u.setCoefficients(coefficients);
 
     #if defined( DEBUG )
@@ -277,19 +392,41 @@ double BaseFittingFamilyOptProblems<OptMethod>::computeConstraintFunction(const 
         optMethod.setProblem(u);
         optMethod.solve(*result);
         minValue = result->value;
-        
+
+        return -minValue - delta;
+    } else if (index == dimension + 3) {
+        calcCoefficients(x);
+
+    #if defined( MPFR )
+        std::vector<real_number> x_real(dimension);
+        for (size_t i = 0; i < dimension; ++i) {
+            x_real[i] = x[i];
+        }
+        u.setOmega(x_real);
+    #else
+        u.setOmega(x);
+    #endif
+
+        u.setCoefficients(coefficients);
+
+    #if defined( DEBUG )
+        std::cout << "Constraint: " << index << " Coeffs: ";    
+        for (size_t k = 0; k < numberCoefficients; ++k) {
+            std::cout << coefficients[k] << " ";
+        }
+        std::cout << "\n";
+    #endif
+
+        using Result = typename OptMethod::Result;
+        std::unique_ptr<Result> result(static_cast<Result*>(optMethod.createResult()));
+
         u.setTypeProblem(OneDimensionalSupportiveOptProblem::TypeProblem::MAX);
         optMethod.setProblem(u);
         optMethod.solve(*result);
         maxValue = -result->value;
 
-    #if defined( DEBUG )
-        std::cout << "Constraint: " << index " Max value: " << maxValue << "\n";
-        std::cout << "Constraint: " << index " Min value: " << minValue << "\n";
-    #endif
-
-        return maxValue - minValue - 2 * delta;
-    } else if (index == dimension + 3) {
+        return maxValue - delta;
+    } else if (index == dimension + 4) {
         calcCoefficients(x);
         return -std::abs(uDerivative(x));
     }
