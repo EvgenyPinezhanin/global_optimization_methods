@@ -38,6 +38,10 @@ const size_t graphType = 1; // 0 - slices, 1 - solution, 2 - multi curves
 const size_t problemNumber = 2; // 0, 1, ..., familySize - 1 (only for application type)
 
 int main() {
+#if defined( MPFR )
+    mpfr::mpreal::set_default_prec(mpfr::digits2bits(64));
+#endif
+
     // Default parameters //
     double accuracyGsa = 0.001, reliabilityGsa = 3.0;
     size_t maxTrialsGsa = 10000, maxFevalsGsa = 10000;
@@ -173,18 +177,30 @@ int main() {
 
     size_t numberWideWindowPoints = fittingFamilyOptProblems.getNumberWideWindowPoints();
 
-    for (size_t i = 3; i < 4; ++i) {
+    for (size_t i = 0; i < familySize; ++i) {
         fittingFamilyOptProblems.setProblemNumber(i);
 
-        std::cout << i << "\n";
+        std::cout << "Problem №" << i << "\n";
         fittingFamilyOptProblems.getOptimalPoints(optimalPoints);
         fittingFamilyOptProblems.computeObjectiveFunction(optimalPoints[0]);
         fittingFamilyOptProblems.getCoefficients(coefficients);
 
-        for (size_t k = 0; k < numberCoefficients; ++k) {
-            std::cout << coefficients[k] << " ";
+        std::cout << "X* = [" << optimalPoints[0][0];
+        for (size_t k = 1; k < dimension; ++k) {
+            std::cout << ", " << optimalPoints[0][k];
         }
-        std::cout << "\n";
+        std::cout << "]\n";
+
+        for (size_t j = 0; j < fittingFamilyOptProblems.getNumberConstraints(); j++) {
+            std::cout << "g" << j + 1 << "(X*) = " << fittingFamilyOptProblems.computeConstraintFunction(optimalPoints[0], j) << "\n";
+        }
+        std::cout << "f(X*) = " << fittingFamilyOptProblems.computeObjectiveFunction(optimalPoints[0]) << "\n";
+
+        std::cout << "Coeffs = (" << coefficients[0];
+        for (size_t k = 1; k < numberCoefficients; ++k) {
+            std::cout << ", " << coefficients[k];
+        }
+        std::cout << ")\n";
 
         varsSolutionFile.setValuesInArray("coeffs", i * numberCoefficients + 1, coefficients, false);
         varsSolutionFile.setValuesInArray("x_opt", i * dimension + 1, optimalPoints[0], false);
