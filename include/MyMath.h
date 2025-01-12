@@ -8,7 +8,14 @@
     #include <cmath>
 #endif
 
+#define MPFR 
+#if defined( MPFR )
+    #include <mpreal.h>
+#endif
+
 #include <vector>
+
+using Matrix = std::vector<std::vector<double>>;
 
 struct point {
     std::vector<double> x;
@@ -22,23 +29,52 @@ struct point {
     size_t getDimension() const { return x.size(); };
 };
 
-void jordanGaussMethod(const std::vector<std::vector<double>> &A, const std::vector<double> &B, std::vector<double> &X);
+#if defined( MPFR )
+    using real_number = mpfr::mpreal;
+#else
+    using real_number = double;
+#endif
+
+real_number abs_func(real_number x);
+real_number sin_func(real_number x);
+real_number cos_func(real_number x);
+
+void jordanGaussMethod(const std::vector<std::vector<real_number>> &A, const std::vector<real_number> &B, std::vector<double> &X);
 
 class mnk {
 private:
-    std::vector<std::vector<double>> A;
-    std::vector<double> B;
+    std::vector<std::vector<real_number>> A;
+    std::vector<real_number> B;
 
 public:
     mnk() : A(), B() {};
-    mnk(const std::vector<std::vector<double>>& _A, const std::vector<double>& _B)
+    mnk(const std::vector<std::vector<real_number>>& _A, const std::vector<real_number>& _B)
         : A(_A), B(_B) {};
 
-    void setA(const std::vector<std::vector<double>>& _A) { A = _A; };
-    void setB(const std::vector<double>& _B) { B = _B; };
+#if defined( MPFR )
+    mnk(const std::vector<std::vector<double>>& _A, const std::vector<double>& _B)
+        : A(_A.size(), std::vector<real_number>(_A.size())), B(_B.size())
+    {
+        size_t size = _A.size();
+        for (size_t i = 0; i < size; ++i) {
+            for (size_t j = 0; j < size; ++j) {
+                A[i][j] = _A[i][j];
+            }
+            B[i] = _B[i];
+        }
+    };
+#endif
 
+    void setA(const std::vector<std::vector<real_number>>& _A) { A = _A; };
+    void setB(const std::vector<real_number>& _B) { B = _B; };
+
+#if defined( MPFR )
     void solve(std::vector<double> &X) const;
+#endif
+    void solve(std::vector<real_number> &X) const;
 };
+
+double euclideanNormSqr(const std::vector<double> &value);
 
 double euclideanDistance(const std::vector<double> &firstValue, const std::vector<double> &secondValue);
 double euclideanDistance(double firstValue, double secondValue);
