@@ -21,8 +21,8 @@
 #include <MyMath.h>
 #include <omp.h>
 
-// #define MGGSA_WITH_GSA
-#define MGGSA_WITH_SCANNING
+#define MGGSA_WITH_GSA
+// #define MGGSA_WITH_SCANNING
 
 #define SEARCH_OPTIMUM_MGGSA
 // #define SEARCH_OPTIMUM_SCAN
@@ -47,8 +47,12 @@ const size_t graphType = 0; // 0 - u(t), 1 - slices
 const size_t problemNumber = 0; // 0, 1, ..., familySize - 1
 
 int main() {
+#if defined( MPFR )
+    mpfr::mpreal::set_default_prec(mpfr::digits2bits(64));
+#endif
+
     // Default parameters //
-    double accuracyOptMethod = 0.000005, reliabilityOptMethod = 3.0;
+    double accuracyOptMethod = 0.0005, reliabilityOptMethod = 3.0;
     size_t maxTrialsOptMethod = 10000, maxFevalsOptMethod = 10000;
 
 #if defined( MGGSA_WITH_GSA )
@@ -67,8 +71,8 @@ int main() {
     size_t familySize = fittingFamilyOptProblems.getFamilySize();
 
     double accuracy = 0.005, error = 0.0, d = 0.01;
-    std::vector<double> reliability(dimension + 4, 3.0);
-    size_t maxTrials = 60000, maxFevals = 1000000000;
+    std::vector<double> reliability(dimension + 5, 3.0);
+    size_t maxTrials = 10000, maxFevals = 1000000000;
     size_t density = 12, key = 1, increment = 0;
     TypeSolve typeSolve = TypeSolve::SOLVE;
     MggsaParameters mggsaParameters(accuracy, error, maxTrials, maxFevals, reliability,
@@ -140,7 +144,10 @@ int main() {
     std::ofstream optimalValuesFileMGGSA("output_data/new_model_class/fitting_family_problems_search_solution/opt_values_mggsa.txt");
     if (!optimalValuesFileMGGSA.is_open()) std::cerr << "opt_values_mggsa.txt opening error\n";
     for (size_t i = 0; i < familySize; ++i) {
-        if (i % 5 == 0) {
+        if (i % 5 == 0 && i != 0) {
+            optimalValuesFileMGGSA << "\n";
+        }
+        if (i % 10 == 0 && i != 0) {
             optimalValuesFileMGGSA << "\n";
         }
         optimalValuesFileMGGSA << optimalValuesMGGSA[i] << ", ";
