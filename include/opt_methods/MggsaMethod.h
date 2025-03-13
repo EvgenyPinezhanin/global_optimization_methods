@@ -26,6 +26,8 @@ public:
 
     enum class TypeSolve { SOLVE, RESOLVE };
 
+    using typename GeneralNumericalMethod::ErrorMetrics;
+
     struct Parameters : public GeneralNumericalMethod::Parameters {
         std::vector<double> reliability;
         double d;
@@ -573,7 +575,8 @@ void MggsaMethod<OptProblemType>::x(const std::vector<double> &P, std::vector<do
 template <typename OptProblemType>
 bool MggsaMethod<OptProblemType>::stopConditions() {
     size_t dimension = this->problem.getSearchArea().dimension;
-    if (std::pow(this->trialPoints[t].x - this->trialPoints[t - 1].x, 1.0 / dimension) <= this->accuracy) {
+    this->resultingAccuracy = std::pow(this->trialPoints[t].x - this->trialPoints[t - 1].x, 1.0 / dimension);
+    if (this->resultingAccuracy <= this->accuracy) {
         this->stoppingCondition = StoppingConditions::ACCURACY;
         return true;
     }
@@ -596,17 +599,27 @@ bool MggsaMethod<OptProblemType>::stopConditionsTest() {
     y(this->trialPoints[t].x, X);
 
     size_t numberOptimalPoints = optimalPoints.size();
-    for (size_t i = 0; i < numberOptimalPoints; ++i) {
-        // TODO: to add ability of distance choosing
-        // if (chebishevDistance(X, optimalPoints[i]) <= this->error) {
-        //     this->stoppingCondition = StoppingConditions::ERROR;
-        //     return true;
-        // }
-        if (euclideanDistance(X, optimalPoints[i]) <= this->error) {
+    if (this->errorMetric == ErrorMetrics::F_ERROR) {
+        if (this->trialPoints[t].z - this->problem.getOptimalValue() <= this->error) {
             this->stoppingCondition = StoppingConditions::ERROR;
             return true;
         }
+    } else if (this->errorMetric == ErrorMetrics::X_EUCLID_ERROR) {
+        for (size_t i = 0; i < numberOptimalPoints; ++i) {
+            if (euclideanDistance(X, optimalPoints[i]) <= this->error) {
+                this->stoppingCondition = StoppingConditions::ERROR;
+                return true;
+            }
+        }
+    } else if (this->errorMetric == ErrorMetrics::X_CHEBISHEV_ERROR) {
+        for (size_t i = 0; i < numberOptimalPoints; ++i) {
+            if (chebishevDistance(X, optimalPoints[i]) <= this->error) {
+                this->stoppingCondition = StoppingConditions::ERROR;
+                return true;
+            }
+        }
     }
+
     return stopConditions();
 }
 

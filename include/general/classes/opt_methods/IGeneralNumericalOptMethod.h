@@ -14,12 +14,16 @@ namespace opt {
         using GeneralMethod = IGeneralOptMethod<OptProblemType>;
         using Trial = TrialType;
 
+        enum class ErrorMetrics { F_ERROR, X_EUCLID_ERROR, X_CHEBISHEV_ERROR };
+
         struct Parameters : public GeneralMethod::Parameters {
             double accuracy, error;
             size_t maxTrials, maxFevals;
+            ErrorMetrics errorMetric;
 
-            Parameters(double _accuracy = 0.001, double _error = 0.001, size_t _maxTrials = 1000, size_t _maxFevals = 1000):
-                accuracy(_accuracy), error(_error), maxTrials(_maxTrials), maxFevals(_maxFevals) {};
+            Parameters(double _accuracy = 0.001, double _error = 0.001, size_t _maxTrials = 1000,
+                       size_t _maxFevals = 1000, ErrorMetrics _errorMetric = ErrorMetrics::X_EUCLID_ERROR):
+                accuracy(_accuracy), error(_error), maxTrials(_maxTrials), maxFevals(_maxFevals), errorMetric(_errorMetric) {};
         };
 
         using StoppingCondition = size_t;
@@ -66,6 +70,7 @@ namespace opt {
         double accuracy, resultingAccuracy, error;
         size_t numberTrials, maxTrials;
         size_t numberFevals, maxFevals;
+        ErrorMetrics errorMetric;
 
         StoppingCondition stoppingCondition;
 
@@ -93,9 +98,10 @@ namespace opt {
             error = parametersCast.error;
             maxTrials = parametersCast.maxTrials;
             maxFevals = parametersCast.maxFevals;
+            errorMetric = parametersCast.errorMetric;
         }
         void getParameters(typename GeneralMethod::Parameters &parameters) const override {
-            parameters = Parameters(accuracy, error, maxTrials, maxFevals);
+            parameters = Parameters(accuracy, error, maxTrials, maxFevals, errorMetric);
         }
 
         void setAccuracy(double _accuracy) { accuracy = _accuracy; };
@@ -109,6 +115,9 @@ namespace opt {
 
         void setMaxFevals(size_t _maxFevals) { maxFevals = _maxFevals; };
         size_t getMaxFevals() const { return maxFevals; };
+
+        void setErrorMetric(ErrorMetrics _errorMetric) { errorMetric = _errorMetric; };
+        ErrorMetrics getErrorMetric() { return errorMetric; };
 
         void getTrialPoints(std::vector<TrialType> &_trialPoints) const { _trialPoints = trialPoints; };
         size_t getNumberTrialPoints() const { return trialPoints.size(); };
