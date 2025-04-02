@@ -11,15 +11,15 @@
 #endif
 
 #if defined( MPFR )
-    real_number abs_func(real_number x) {
+    real_number abs_func(const real_number &x) {
         return mpfr::abs(x, mpfr::mpreal::get_default_rnd());
     }
 
-    real_number sin_func(real_number x) {
+    real_number sin_func(const real_number &x) {
         return mpfr::sin(x, mpfr::mpreal::get_default_rnd());
     }
 
-    real_number cos_func(real_number x) {
+    real_number cos_func(const real_number &x) {
         return mpfr::cos(x, mpfr::mpreal::get_default_rnd());
     }
 #else
@@ -43,6 +43,8 @@ void jordanGaussMethod(const std::vector<std::vector<real_number>> &A, const std
     std::vector<size_t> order(size);
     real_number coeff, max_elem;
     size_t max_index_row, max_index_column;
+
+    const double eps = 1e-16;
 
     for (size_t i = 0; i < size; ++i) {
         max_elem = abs_func(ATmp[i][0]);
@@ -92,7 +94,7 @@ void jordanGaussMethod(const std::vector<std::vector<real_number>> &A, const std
         }
         std::swap(order[i], order[max_index_column]);
 
-        if (ATmp[i][i] != 0.0) {
+        if (abs_func(ATmp[i][i]) > eps) {
             coeff = ATmp[i][i];
             for (size_t k = i; k < size; ++k) {
                 ATmp[i][k] /= coeff;
@@ -199,7 +201,7 @@ double chebishevDistance(const std::vector<double> &firstValue, const std::vecto
     return res;
 }
 
-double chebishevDistance(double firstValue, double secondValue) {
+double chebishevDistance(double firstValue, double secondValue) { //-V524
     return std::abs(firstValue - secondValue);
 }
 

@@ -68,7 +68,7 @@ void mapd(double x, int m, double* y, int n, int key) {
     r = 0.5;
     it = 0;
     dr = nexp;
-    for (mne = 1, i = 0; i < m; mne *= dr, i++); // mne = dr**m
+    for (mne = 1, i = 0; i < m; mne *= dr, i++) {} // mne = dr**m
     for (i = 0; i < n; i++) {
         iw[i] = 1;
         y[i] = 0.0;
@@ -82,7 +82,7 @@ void mapd(double x, int m, double* y, int n, int key) {
     }
     for (j = 0; j < m; j++) {
         iq = 0;
-        if (x == 1.0) {
+        if (x == 1.0) { //-V550
             is = nexp - 1; 
             d = 0.0;
         } else {

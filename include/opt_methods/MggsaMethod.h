@@ -350,7 +350,7 @@ void MggsaMethod<OptProblemType>::insertInSorted(const opt::IndexTrial &trial) {
 
     while(true) {
         if (iter == iterEnd || iter->x > trial.x) break;
-        iter++;
+        ++iter;
     }
     iter = this->I[trial.nu].insert(iter, trial);
 
@@ -543,10 +543,10 @@ bool MggsaMethod<OptProblemType>::checkDensity(double h) {
 
 template <typename OptProblemType>
 void MggsaMethod<OptProblemType>::y(double x, std::vector<double> &X) const {
-    int d = (key != 3) ? density : density + 1;
+    int dens = (key != 3) ? density : density + 1;
     size_t dimension = this->problem.getSearchArea().dimension;
     X.resize(dimension);
-    mapd(x, d, X.data(), dimension, key);
+    mapd(x, dens, X.data(), dimension, key);
 
     opt::MultiDimensionalSearchArea searchArea = this->problem.getSearchArea();
     for (int i = 0; i < dimension; i++) {
@@ -646,8 +646,8 @@ void MggsaMethod<OptProblemType>::solve(typename GeneralMethod::Result &result) 
         this->trialPoints.clear();
         this->numberFevals = 0;
 
-        this->trialPoints.push_back(opt::IndexTrial{ peanoA, -1.0, -1 });
-        this->trialPoints.push_back(opt::IndexTrial{ peanoB, -1.0, -1 });
+        this->trialPoints.emplace_back(opt::IndexTrial{ peanoA, -1.0, -1 });
+        this->trialPoints.emplace_back(opt::IndexTrial{ peanoB, -1.0, -1 });
         t = 1;
         lastI = 0;
         lastTrialsPosI = std::vector<size_t>{ 1 };
@@ -740,8 +740,8 @@ bool MggsaMethod<OptProblemType>::solveTest(typename GeneralMethod::Result &resu
         this->trialPoints.clear();
         this->numberFevals = 0;
 
-        this->trialPoints.push_back(opt::IndexTrial{ peanoA, -1.0, -1 });
-        this->trialPoints.push_back(opt::IndexTrial{ peanoB, -1.0, -1 });
+        this->trialPoints.emplace_back(opt::IndexTrial{ peanoA, -1.0, -1 });
+        this->trialPoints.emplace_back(opt::IndexTrial{ peanoB, -1.0, -1 });
         t = 1;
         lastI = 0;
         lastTrialsPosI = std::vector<size_t>{ 1 };

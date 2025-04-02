@@ -5,7 +5,7 @@ void Script::start() {
     error = 0;
 
 #if defined(__linux__)
-    setenv("QT_QPA_PLATFORM", "xcb", false);
+    setenv("QT_QPA_PLATFORM", "xcb", 0);
     inputString = "chmod +x " + name;
     if (system(inputString.c_str())) error = 1;
 #endif
