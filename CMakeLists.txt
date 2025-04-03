@@ -60,6 +60,8 @@ add_custom_command(
 
   ${OUT_DIR}/output_data/new_model_class/sample_fitting_problem
   ${OUT_DIR}/output_data/new_model_class/fitting_family_problems_operational_characteristics/mggsa
+  ${OUT_DIR}/output_data/new_model_class/fitting_family_problems_operational_characteristics/direct
+  ${OUT_DIR}/output_data/new_model_class/fitting_family_problems_operational_characteristics/isres
   ${OUT_DIR}/output_data/new_model_class/fitting_family_problems_plot
   ${OUT_DIR}/output_data/new_model_class/fitting_family_problems_search_solution
   ${OUT_DIR}/output_data/new_model_class/fitting_family_problems/slices
