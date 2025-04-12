@@ -36,10 +36,11 @@ public:
 
         Parameters(double _accuracy = 0.001, double _error = 0.001,
                    int _maxTrials = 1000, int _maxFevals = 1000,
+                   ErrorMetrics _errorMetric = ErrorMetrics::X_EUCLID_ERROR,
                    std::vector<double> _reliability = std::vector<double>{}, double _d = 0.0,
                    size_t _density = 10, size_t _key = 1, size_t _increment = 0,
                    TypeSolve _typeSolve = TypeSolve::SOLVE)
-            : GeneralNumericalMethod::Parameters(_accuracy, _error, _maxTrials, _maxFevals),
+            : GeneralNumericalMethod::Parameters(_accuracy, _error, _maxTrials, _maxFevals, _errorMetric),
               reliability(_reliability), d(_d), density(_density), key(_key),
               increment(_increment), typeSolve(_typeSolve) {};
     };
@@ -136,8 +137,8 @@ public:
         typeSolve = parametersCast.typeSolve;
     };
     void getParameters(typename GeneralMethod::Parameters &parameters) const override {
-        parameters = Parameters(this->accuracy, this->error, this->maxTrials, this->maxFevals, reliability,
-                                d, density, key, increment, typeSolve);
+        parameters = Parameters(this->accuracy, this->error, this->maxTrials, this->maxFevals, this->errorMetric,
+                                reliability, d, density, key, increment, typeSolve);
     };
 
     void y(double x, std::vector<double> &X) const;
