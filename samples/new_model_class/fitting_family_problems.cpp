@@ -35,6 +35,7 @@ using MggsaParameters = MggsaMethod<FittingFamilyOptProblems<OptMethod>>::Parame
 using Result = MggsaMethod<FittingFamilyOptProblems<OptMethod>>::GeneralNumericalMethod::Result;
 using Report = MggsaMethod<FittingFamilyOptProblems<OptMethod>>::Report;
 using GsaParameters = GsaMethod<OneDimensionalSupportiveOptProblem>::Parameters;
+using ErrorMetrics = MggsaMethod<FittingFamilyOptProblems<OptMethod>>::ErrorMetrics;
 using TypeSolve = MggsaMethod<FittingFamilyOptProblems<OptMethod>>::TypeSolve;
 
 const std::string methodName = "mggsa";
@@ -61,9 +62,10 @@ int main() {
     std::vector<double> reliability(dimension + 4, 2.0);
     size_t maxTrials = 10000, maxFevals = 1000000000;
     size_t density = 12, key = 1, increment = 0;
+    ErrorMetrics errorMetric = ErrorMetrics::F_ERROR;
     TypeSolve typeSolve = TypeSolve::SOLVE;
-    MggsaParameters mggsaParameters(accuracy, error, maxTrials, maxFevals, reliability,
-                                    d, density, key, increment, typeSolve);
+    MggsaParameters mggsaParameters(accuracy, error, maxTrials, maxFevals, errorMetric,
+                                    reliability, d, density, key, increment, typeSolve);
 
     MggsaMethod<FittingFamilyOptProblems<OptMethod>> mggsa;
     mggsa.setParameters(mggsaParameters);

@@ -26,6 +26,7 @@
 using OptMethod = GsaMethod<OneDimensionalSupportiveOptProblem>;
 using MggsaParameters = MggsaMethod<FittingFamilyOptProblems<OptMethod>>::Parameters;
 using GsaParameters = GsaMethod<OneDimensionalSupportiveOptProblem>::Parameters;
+using ErrorMetrics = MggsaMethod<FittingFamilyOptProblems<OptMethod>>::ErrorMetrics;
 using TypeSolve = MggsaMethod<FittingFamilyOptProblems<OptMethod>>::TypeSolve;
 using Task = opt::Task<FittingFamilyOptProblems<OptMethod>>;
 
@@ -78,8 +79,9 @@ int main() {
     double error = 0.1;
     size_t maxFevals = 1000000;
     size_t density = 11, increment = 0;
+    ErrorMetrics errorMetric = ErrorMetrics::F_ERROR;
     TypeSolve typeSolve = TypeSolve::SOLVE;
-    MggsaParameters parameters(0.0, error, 0, maxFevals, std::vector<double>{},
+    MggsaParameters parameters(0.0, error, 0, maxFevals, errorMetric, std::vector<double>{},
                                0.0, density, 0, increment, typeSolve);
 
     MggsaMethod<FittingFamilyOptProblems<OptMethod>> mggsa;
