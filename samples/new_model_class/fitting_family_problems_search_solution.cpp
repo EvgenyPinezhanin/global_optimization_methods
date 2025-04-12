@@ -99,7 +99,7 @@ int main() {
 
 #pragma omp parallel for schedule(dynamic, chunk) PROC_BIND num_threads(omp_get_num_procs()) \
         shared(optimalPointsMGGSA, optimalValuesMGGSA) firstprivate(fittingFamilyOptProblems, mggsa)
-    for (size_t i = 20; i < familySize; ++i) {
+    for (size_t i = 0; i < familySize; ++i) {
         fittingFamilyOptProblems.setProblemNumber(i);
         mggsa.setProblem(fittingFamilyOptProblems);
 
