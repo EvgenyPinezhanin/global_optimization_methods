@@ -38,6 +38,7 @@ using MggsaParameters = MggsaMethod<FittingFamilyOptProblems<OptMethod>>::Parame
 using Result = MggsaMethod<FittingFamilyOptProblems<OptMethod>>::GeneralNumericalMethod::Result;
 using Report = MggsaMethod<FittingFamilyOptProblems<OptMethod>>::Report;
 using OptMethodParameters = OptMethod::Parameters;
+using ErrorMetrics = MggsaMethod<FittingFamilyOptProblems<OptMethod>>::ErrorMetrics;
 using TypeSolve = MggsaMethod<FittingFamilyOptProblems<OptMethod>>::TypeSolve;
 
 const std::string methodName = "mggsa";
@@ -52,7 +53,7 @@ int main() {
 #endif
 
     // Default parameters //
-    double accuracyOptMethod = 0.0005, reliabilityOptMethod = 3.0;
+    double accuracyOptMethod = 0.00005, reliabilityOptMethod = 3.0;
     size_t maxTrialsOptMethod = 10000, maxFevalsOptMethod = 10000;
 
 #if defined( MGGSA_WITH_GSA )
@@ -72,11 +73,12 @@ int main() {
 
     double accuracy = 0.005, error = 0.0, d = 0.01;
     std::vector<double> reliability(dimension + 5, 3.0);
-    size_t maxTrials = 10000, maxFevals = 1000000000;
+    size_t maxTrials = 70000, maxFevals = 1000000000;
     size_t density = 12, key = 1, increment = 0;
+    ErrorMetrics errorMetric = ErrorMetrics::F_ERROR;
     TypeSolve typeSolve = TypeSolve::SOLVE;
-    MggsaParameters mggsaParameters(accuracy, error, maxTrials, maxFevals, reliability,
-                                    d, density, key, increment, typeSolve);
+    MggsaParameters mggsaParameters(accuracy, error, maxTrials, maxFevals, errorMetric,
+                                    reliability, d, density, key, increment, typeSolve);
 
     MggsaMethod<FittingFamilyOptProblems<OptMethod>> mggsa;
     mggsa.setParameters(mggsaParameters);
@@ -97,7 +99,7 @@ int main() {
 
 #pragma omp parallel for schedule(dynamic, chunk) PROC_BIND num_threads(omp_get_num_procs()) \
         shared(optimalPointsMGGSA, optimalValuesMGGSA) firstprivate(fittingFamilyOptProblems, mggsa)
-    for (size_t i = 0; i < familySize; ++i) {
+    for (size_t i = 20; i < familySize; ++i) {
         fittingFamilyOptProblems.setProblemNumber(i);
         mggsa.setProblem(fittingFamilyOptProblems);
 
@@ -117,7 +119,8 @@ int main() {
         double optimalValue = fittingFamilyOptProblems.getOptimalValue();
 
         std::ostringstream output;
-        output << "MGGSAMethod, problem number = " << i << ", number trials = " << result->numberTrials << ", X = ";
+        output << "MGGSAMethod, problem number = " << i << ", number trials = " << result->numberTrials
+               << ", resulting accuracy = " << result->resultingAccuracy << ", X = ";
         report->printPoint(output, result->point);
         output << ", f(X) = " << result->value << ", X_opt = ";
         report->printPoint(output, optimalPoints[0]);
