@@ -5,8 +5,7 @@
 #include <opt_problems/BaseFittingFamilyOptProblems.h>
 #include <general/structures/search_areas/MultiDimensionalSearchArea.h>
 
-// const size_t familySizeFitting = 100;
-const size_t familySizeFitting = 20;
+const size_t familySizeFitting = 100;
 const size_t dimensionFitting = 4;
 
 const std::vector<double> lowerBound{ 0.01, 0.01, 0.01, 0.01 };
@@ -82,146 +81,173 @@ const std::vector<std::vector<std::vector<double>>> optimalPointsFitting {
     std::vector<std::vector<double>>{ std::vector<double>{ 0.03745, 0.0816614, 0.153566, 1.10338 } },
     std::vector<std::vector<double>>{ std::vector<double>{ 0.0544543, 0.109354, 0.289601, 1.13642 } },
     std::vector<std::vector<double>>{ std::vector<double>{ 1.52509, 1.71797, 1.86712, 1.99101 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.251705, 0.522804, 1.28557, 1.40072 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.341343, 0.420049, 1.25375, 1.4306 } },
     std::vector<std::vector<double>>{ std::vector<double>{ 0.335756, 0.466447, 1.27877, 1.37205 } },
     std::vector<std::vector<double>>{ std::vector<double>{ 0.690419, 0.785157, 1.50129, 1.62323 } },
 
     std::vector<std::vector<double>>{ std::vector<double>{ 0.0185022, 0.0296765, 0.131703, 0.261422 } }, // 1
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.846373, 1.41626, 1.6689, 1.78356 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.44493, 1.61789, 1.85546, 1.98615 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 1.00111, 1.50639, 1.76291, 1.88146 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 1.48501, 1.64922, 1.77457, 1.98251 } },
     std::vector<std::vector<double>>{ std::vector<double>{ 0.141906, 0.162797, 0.466447, 1.17577 } },
     std::vector<std::vector<double>>{ std::vector<double>{ 0.0209314, 0.828397, 0.94257, 1.15002 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.258993, 0.880382, 1.06694, 1.19181 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.230571, 0.911719, 1.04484, 1.13909 } },
     std::vector<std::vector<double>>{ std::vector<double>{ 0.0102429, 0.756493, 1.00524, 1.12962 } },
     std::vector<std::vector<double>>{ std::vector<double>{ 0.0199597, 0.762809, 0.947428, 1.07763 } },
     std::vector<std::vector<double>>{ std::vector<double>{ 0.0243323, 0.0364783, 0.107897, 0.263851 } },
     std::vector<std::vector<double>>{ std::vector<double>{ 1.2948, 1.67133, 1.80542, 1.9915 } },
 
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.25132, 0.747019, 1.83044, 1.69246 } }, // 2
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.133889, 0.0104858, 0.196077, 0.0726733 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.255349, 0.0124292, 0.0134009, 0.196077 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.65165, 0.66637, 1.50007, 0.720784 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.0668433, 0.130974, 0.0104858, 0.197048 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.0182593, 0.641106, 1.1318, 1.05601 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.13861, 0.025061, 0.634304, 1.0667 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.15318, 0.998684, 0.0202026, 0.824753 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.63319, 1.75854, 1.00451, 1.50882 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.06767, 0.0104858, 1.19205, 0.756736 } },
-
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.02395, 0.935525, 1.125, 0.0308911 } }, // 3
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.97036, 1.83822, 1.29019, 1.72647 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.833499, 1.6672, 1.86348, 1.23966 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.70024, 0.815037, 1.19302, 1.8217 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.68372, 1.95579, 1.81975, 1.24355 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.384583, 1.29505, 0.353489, 1.43302 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.00451, 0.0104858, 0.943298, 1.0667 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.65262, 1.39221, 1.79157, 0.806292 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.0648999, 0.130974, 0.0124292, 0.197048 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.64582, 1.76631, 1.11529, 0.712039 } },
-
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.00646, 0.759651, 0.0143726, 1.20274 } }, // 4
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.508958, 1.26201, 0.285471, 1.3757 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.0648999, 0.130974, 0.0124292, 0.199963 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.0134009, 0.450657, 0.145549, 1.20177 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.22606, 0.69552, 1.03172, 0.0114575 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.885969, 1.06184, 0.0143726, 0.948157 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.81295, 1.43983, 0.881111, 1.62736 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.0785034, 0.119314, 0.159153, 1.08031 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.0134009, 0.0143726, 0.385554, 0.130002 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.65165, 0.993826, 1.83433, 1.94899 } },
-
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.27367, 0.0172876, 0.136804, 0.0833618 } }, // 5
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.70412, 0.814065, 1.27853, 1.81101 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.28047, 0.358347, 0.420535, 1.38444 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.887913, 1.70412, 1.84502, 1.18913 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.63222, 1.49618, 1.76631, 0.806292 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.0726733, 0.196077, 0.133889, 0.0104858 },
-                                      std::vector<double>{ 0.0726733, 0.134861, 0.0104858, 0.197048 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.06476, 0.0153442, 0.641106, 1.13472 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.133889, 0.0104858, 0.196077, 0.0726733 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.12986, 0.0104858, 1.00549, 0.943298 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.14055, 0.642078, 0.0240894, 1.07059 } },
-
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.33489, 0.276726, 1.22897, 0.545881 } }, // 6
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.64971, 1.76145, 1.10265, 0.705237 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.98591, 1.73716, 1.86251, 1.20274 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.94024, 1.82558, 1.71093, 1.21828 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.21148, 0.952043, 1.05504, 0.625559 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.87222, 1.75757, 0.947185, 1.44371 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.0211743, 0.643049, 1.14249, 1.0667 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.478835, 1.40679, 1.31156, 0.311707 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.31059, 0.604182, 1.21245, 0.263123 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.12986, 1.00549, 0.0104858, 0.881111 } },
-
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.86542, 1.63125, 1.75659, 1.99563 } }, // 7
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.0726733, 0.196077, 0.133889, 0.0104858 },
-                                      std::vector<double>{ 0.133889, 0.0104858, 0.196077, 0.0726733 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.12986, 0.0104858, 1.00549, 0.943298 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.14638, 0.638191, 0.0172876, 1.07253 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.14929, 0.0104858, 0.626531, 1.06865 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.26104, 0.504099, 0.282556, 1.34072 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.0104858, 1.12986, 1.00451, 0.817952 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.3961, 1.67594, 1.93247, 1.78672 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.34169, 0.404988, 0.370007, 1.45926 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.00937, 0.758679, 0.0240894, 1.19108 } },
-
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.41942, 1.82461, 1.93927, 1.70412 } }, // 8
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.73716, 1.9898, 1.60793, 1.84988 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.885969, 1.06087, 0.970505, 0.0279761 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.0134009, 0.0143726, 0.385554, 0.130002 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.24355, 1.85182, 1.67206, 0.801433 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.01229, 0.94427, 0.107654, 1.07739 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.00451, 0.881111, 0.0104858, 1.06767 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.2348, 0.70718, 1.02978, 0.0231177 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.025061, 0.640134, 1.13666, 1.06379 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.42914, 1.58655, 1.89652, 1.77603 },
-                                      std::vector<double>{ 1.777, 1.88971, 1.44274, 1.57878} },
-
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.130974, 0.0104858, 0.0143726, 0.254377 } }, // 9
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.502156, 1.23772, 1.33294, 0.312678 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.0765601, 0.0172876, 0.0240894, 1.125 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.06767, 0.0104858, 1.19205, 0.756736 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.00451, 0.0104858, 0.943298, 1.0667 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 1.74008, 1.6021, 1.97717, 1.85279 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.127087, 0.0124292, 0.0755884, 0.194133 },
-                                      std::vector<double>{ 0.0726733, 0.134861, 0.0104858, 0.197048 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.197048, 0.259236, 0.0104858, 1.12986 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.128059, 0.0104858, 0.073645, 0.194133 },
-                                      std::vector<double>{ 0.0726733, 0.134861, 0.0104858, 0.197048 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.31365, 1.37958, 1.28047, 0.44677 } }
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.884755, 1.26711, 1.72429, 1.83166 } }, // 2
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.025304, 0.0573694, 0.067572, 0.187089 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0272473, 0.031134, 0.153566, 0.178829 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.686532, 0.77204, 1.53384, 1.63489 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0209314, 0.100123, 0.110326, 0.136075 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0447375, 0.642321, 1.05188, 1.16314 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0471667, 0.641349, 1.05528, 1.16508 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0219031, 0.834713, 0.978522, 1.07229 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 1.00962, 1.49886, 1.65092, 1.75392 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0223889, 0.861434, 0.966376, 1.06403 } },
+    
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.103524, 0.927509, 1.03585, 1.11359 } }, // 3
+    std::vector<std::vector<double>>{ std::vector<double>{ 1.4838, 1.6757, 1.80542, 1.93854 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.287657, 0.719569, 1.27634, 1.40315 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.376566, 0.753578, 1.29578, 1.39343 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 1.17286, 1.67036, 1.79085, 1.92154 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0301624, 0.0991516, 0.498026, 1.17966 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0413367, 0.92265, 0.987753, 1.07375 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.834227, 1.38177, 1.68882, 1.80639 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0379358, 0.055426, 0.0612561, 0.191461 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.766696, 1.18938, 1.68542, 1.79279 } },
+    
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.016073, 0.733658, 1.04654, 1.15537 } }, // 4
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.32361, 0.471791, 1.26468, 1.37108 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0301624, 0.0442517, 0.0879773, 0.137047 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0223889, 0.0641711, 0.515031, 1.19326 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0724304, 0.662726, 1.06694, 1.16071 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0136438, 0.864349, 0.969777, 1.05431 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0500818, 0.0967224, 0.157452, 1.16266 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.331383, 0.418834, 1.31181, 1.41043 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0121863, 0.0505676, 0.0607703, 0.140448 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.991154, 1.67959, 1.78356, 1.90356 } },
+    
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0126721, 0.0146155, 0.0957507, 1.18743 } }, // 5
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.243446, 0.688961, 1.31424, 1.40217 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.369279, 0.41349, 1.288, 1.37108 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.318265, 0.714225, 1.30063, 1.38566 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.805077, 1.49157, 1.61303, 1.73838 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.013158, 0.761351, 1.0616, 1.14565 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0175305, 0.640377, 1.07715, 1.15682 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0121863, 0.0505676, 0.0607703, 0.140448 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0345349, 0.931881, 1.00281, 1.08201 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0607703, 0.636005, 1.05869, 1.1578 } },
+    
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.366364, 0.437296, 1.24476, 1.32784 } }, // 6
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.418834, 0.75795, 1.31132, 1.39343 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 1.09901, 1.71505, 1.82485, 1.94389 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 1.29189, 1.70242, 1.82291, 1.93951 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.383368, 0.973663, 1.05188, 1.14468 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.776898, 1.3259, 1.68736, 1.80056 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.013158, 0.639891, 1.0752, 1.15537 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.248304, 0.554869, 1.31181, 1.40266 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.288629, 0.567987, 1.25351, 1.34436 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.016073, 0.914391, 0.982894, 1.05286 } },
+    
+    std::vector<std::vector<double>>{ std::vector<double>{ 1.55861, 1.72623, 1.84137, 1.96478 } }, // 7
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0583411, 0.0631995, 0.10401, 0.138505 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0277332, 0.927023, 1.00087, 1.10873 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0136438, 0.642806, 1.03925, 1.15197 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0248181, 0.63309, 1.06986, 1.16703 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.356647, 0.421749, 1.19666, 1.41772 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0112146, 0.79536, 1.02176, 1.09075 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 1.43861, 1.61837, 1.75489, 1.88364 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.372679, 0.400372, 1.32735, 1.41529 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0112146, 0.756493, 1.03585, 1.1131 } },
+    
+    std::vector<std::vector<double>>{ std::vector<double>{ 1.46582, 1.6242, 1.76995, 1.88364 } }, // 8
+    std::vector<std::vector<double>>{ std::vector<double>{ 1.59165, 1.71943, 1.85352, 1.98032 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0151013, 0.872123, 0.967833, 1.04945 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0257898, 0.0515393, 0.0559119, 0.250248 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.290087, 0.739489, 1.29432, 1.4012 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.181259, 0.94257, 1.03585, 1.11407 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0209314, 0.880382, 0.945485, 1.08881 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0107288, 0.689933, 1.06063, 1.16703 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0398792, 0.628231, 1.05528, 1.13836 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 1.35116, 1.6174, 1.72526, 1.89919 } },
+    
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0350208, 0.0413367, 0.142391, 0.160367 } }, // 9
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.367335, 0.440697, 1.24379, 1.32735 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0141296, 0.0967224, 0.344015, 1.17966 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0107288, 0.751635, 1.07375, 1.15294 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.025304, 0.888156, 1.00524, 1.13739 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 1.59262, 1.71068, 1.8336, 1.95506 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0398792, 0.0583411, 0.0695154, 0.145792 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.0539685, 0.114213, 0.420292, 1.17772 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.025304, 0.632118, 1.09804, 1.19181 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.310978, 0.455272, 1.29432, 1.38371 } }
 };
+
+// const std::vector<std::vector<std::vector<double>>> optimalPointsFitting {
+    // std::vector<std::vector<double>>{ std::vector<double>{ 0.0238464, 0.634061, 1.08152, 1.15002 } },
+    // std::vector<std::vector<double>>{ std::vector<double>{ 0.371222, 0.401344, 1.32007, 1.40995 } },
+    // std::vector<std::vector<double>>{ std::vector<double>{ 0.741918, 0.87601, 0.982408, 1.08346 } },
+    // std::vector<std::vector<double>>{ std::vector<double>{ 0.0583411, 0.0631995, 0.10401, 0.138505 } },
+    // std::vector<std::vector<double>>{ std::vector<double>{ 0.0335632, 0.0471667, 0.0515393, 1.28703 } },
+    // std::vector<std::vector<double>>{ std::vector<double>{ 0.0194739, 0.0806897, 0.266766, 1.15051 } },
+    // std::vector<std::vector<double>>{ std::vector<double>{ 1.52509, 1.71797, 1.86712, 1.99101 } },
+    // std::vector<std::vector<double>>{ std::vector<double>{ 0.314379, 0.448956, 1.29043, 1.42501 } },
+    // std::vector<std::vector<double>>{ std::vector<double>{ 0.347902, 0.456244, 1.27974, 1.36574 } },
+    // std::vector<std::vector<double>>{ std::vector<double>{ 0.993583, 1.09658, 1.87004, 1.99393 } },
+    // 
+    // std::vector<std::vector<double>>{ std::vector<double>{ 0.028219, 0.031134, 0.143363, 0.188546 } },
+    // std::vector<std::vector<double>>{ std::vector<double>{ 1.00913, 1.51489, 1.7923, 1.90842 } },
+    // std::vector<std::vector<double>>{ std::vector<double>{ 1.59117, 1.7102, 1.83263, 1.97644 } },
+    // std::vector<std::vector<double>>{ std::vector<double>{ 0.353732, 0.389198, 1.25691, 1.49546 } },
+    // std::vector<std::vector<double>>{ std::vector<double>{ 0.0136438, 0.830341, 1.00476, 1.0786 } },
+    // std::vector<std::vector<double>>{ std::vector<double>{ 0.227899, 0.94257, 1.03634, 1.12962 } },
+    // std::vector<std::vector<double>>{ std::vector<double>{ 0.0102429, 0.709366, 1.06694, 1.17626 } },
+    // std::vector<std::vector<double>>{ std::vector<double>{ 0.0126721, 0.690905, 1.06111, 1.16703 } },
+    // std::vector<std::vector<double>>{ std::vector<double>{ 0.0180164, 0.0772888, 0.0894348, 0.144821 } },
+    // std::vector<std::vector<double>>{ std::vector<double>{ 1.29189, 1.70242, 1.82291, 1.93951 } },
+// }
 
 const std::vector<double> optimalValuesFitting {
      -4.39812, -5.49008, -12.6529, -7.94221, -9.81698, // 0
-    -10.9344, -17.0111,   -7.10593, -6.2141, -2.76506,
+    -10.9344, -17.0111,   -7.12093, -6.2141, -2.76506,
 
-    -17.1457, -6.20596, -14.7612, -7.66111, -4.69186, // 1
-    -11.5105, -6.58987, -3.41779, -15.8898, -14.057, 
+    -17.1457, -6.55617, -15.0427, -7.66111, -4.69186, // 1
+    -12.0117, -6.58987, -3.41779, -15.8898, -14.057, 
 
-     -7.30814, -15.3084, - 13.0607,   -3.12091, -14.5826, // 2
-     -5.95241,  -6.00309,  -9.77678, -20.4846,   -7.81804,
-
-    -13.5663,  -16.0088,   -5.49887,  -5.06972, -16.3472, // 3
-     -9.28037, -11.4542,   -9.25541,  -5.42001,  -4.18594,
-
-     -9.0378,   -7.3331,   -3.50313,  -8.93695,  -5.54441, // 4
-    -10.5604,  -13.2762,   -7.41819, -13.8957,   -3.77639,
-
-    -12.3072,   -8.63458,  -6.63607,  -4.7894,  -14.3287, // 5
-     -8.67452,  -5.16556, -12.6835,   -9.58347,  -6.61801,
-
-     -5.8946,   -4.46882, -10.4205,  -15.6701,  -12.4687, // 6
-     -4.65406,  -5.11613,  -6.59087,  -5.65083, -13.1604,
-
-    -12.811,    -8.60641, -11.1435,   -5.13746,  -4.60812, // 7
-     -7.57139,  -8.33871, -25.7082,   -5.87832,  -9.98561,
-
-    -24.6592,  -25.5043,  -11.9244,  -10.6042,   -5.93141, // 8
-    -13.9058,   -7.58089,  -5.77671,  -5.50259, -26.3171,
-
-    -11.5467,   -6.26045,  -7.03579, -10.1698,  -13.3914, // 9
-    -19.917,    -6.33359, -10.9576,   -6.19937,  -8.9841
+    -5.92744, -15.5127, -13.0735, -3.07574, -14.6724, // 2
+    -6.01648, -5.87151, -9.30976, -20.1666, -7.60941, 
+    
+    -13.0512, -15.5456, -4.58603, -4.6671, -15.9816, // 3
+    -8.1798, -10.9674, -9.0848, -6.2951, -3.68981, 
+    
+    -8.95866, -7.40272, -3.6479, -8.22028, -5.11955, // 4
+    -10.4913, -6.67487, -7.34365, -14.5174, -3.67739, 
+    
+    -12.3376, -5.20478, -6.61751, -4.63993, -13.8956, // 5
+    -5.04039, -5.57397, -13.5985, -9.11871, -6.24619, 
+    
+    -5.93161, -3.7835, -10.5554, -14.9016, -12.4179, // 6
+    -4.35153, -5.43081, -6.14475, -5.63019, -12.8601, 
+    
+    -12.0021, -9.44716, -10.7009, -4.61897, -4.70596, // 7
+    -6.90997, -8.0072, -25.0219, -5.75251, -9.9702, 
+    
+    -23.6709, -24.8198, -11.6794, -11.723, -4.82685, // 8
+    -13.545, -7.19689, -5.73958, -5.3355, -25.4979, 
+    
+    -11.564, -6.18911, -6.61944, -9.8628, -12.8757, // 9
+    -19.4708, -6.63385, -10.2526, -4.39814, -8.93492
 };
+
+// const std::vector<double> optimalValuesFitting {
+    // -5.29075, -5.64098, -12.8822, -8.98809, -10.2208, 
+    // -11.1829, -17.0111, -7.33195, -6.25569, -2.94888,
+    // 
+    // -17.6818, -6.72019, -17.0377, -7.7694, -4.90138,
+    // -12.3503, -6.8715, -4.06631, -16.2776, -14.8417,
+// }
 
 template <typename OptMethod = ScanningMethod<OneDimensionalSupportiveOptProblem>>
 class FittingFamilyOptProblems : public BaseFittingFamilyOptProblems<OptMethod> {
