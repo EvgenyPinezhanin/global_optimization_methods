@@ -24,34 +24,42 @@ set ylabel "P_s(K)" font fontName offset -1
 
 set tics font fontName
 
-set key box outside right top
+set key box inside right bottom
 set key font fontName spacing 1.3
 
 title(familyName) = sprintf("Operational characteristics on the %s", familyName)
 titlePng(familyName) = ARG1 == 1 ? title(familyName) : sprintf("")
-dataFile(number) = sprintf("output_data/new_model_class/%s/%s/%s_%s_%s", sampleName, methodNames[1], familyName, key[number], r[number])
+
+dataFile(methodNumber, variantNumber) = methodNumber == 1 ? \
+    sprintf("output_data/new_model_class/%s/%s/%s_%s_%s", sampleName, methodNames[methodNumber], familyName, key[variantNumber], r[variantNumber]) : \
+                                        methodNumber == 2 ? \
+    sprintf("output_data/new_model_class/%s/%s/%s", sampleName, methodNames[methodNumber], familyName) : \
+    sprintf("output_data/new_model_class/%s/%s/%s_%s", sampleName, methodNames[methodNumber], familyName, population[variantNumber])
+
+titleGraph(methodNumber, variantNumber) = methodNumber == 1 ? \
+    sprintf("%s, r = %s, key = %s", methodNames[methodNumber], r[variantNumber], key[variantNumber]) : \
+                                          methodNumber == 2 ? sprintf("%s", methodNames[methodNumber]) : \
+                                                              sprintf("%s, pop = %s", methodNames[methodNumber], population[variantNumber])
 
 if (ARG1 == 0) {
     set lmargin 10
 
     set title title(familyName) font fontName
-    plot for [i = 1 : numberKey] dataFile(i) using 1:2 with lines lt i title "r = ".r[i].", key = ".key[i]
+    plot for [i = 1 : numberMethods] for [j = 1 : numberVariants[i]] dataFile(i, j) using 1:2 with lines title titleGraph(i, j)
 
     bind all "alt-End" "exit gnuplot"
     pause mouse close
 } else {
-    set terminal pngcairo size 1440, 600 font "Helvetica, 16"
-    system "mkdir -p output_graph/".sampleName
+    set terminal pngcairo size 1440, 800 font "Helvetica, 16"
+    system "mkdir -p output_graph/new_model_class/".sampleName
 
     set lmargin 10
-    set rmargin 16
+    set rmargin 12
     set tmargin 3
     set bmargin 3
 
-    do for [i = 1 : 2] {
-        set output "output_graph/".sampleName."/".familyName[i].".png"
-
-        set title titlePng(familyName[i]) font "Helvetica, 19"
-        plot for [j = 1 : 3] datafile index (i - 1) * 3 + j - 1 using 1:2 with lines lt j title "r = ".r[(i - 1) * 3 + j]
-    }
+    set output "output_graph/new_model_class/".sampleName."/".familyName.".png"
+    
+    set title titlePng(familyName) font fontName
+    plot for [i = 1 : numberMethods] for [j = 1 : numberVariants[i]] dataFile(i, j) using 1:2 with lines title titleGraph(i, j)
 }
