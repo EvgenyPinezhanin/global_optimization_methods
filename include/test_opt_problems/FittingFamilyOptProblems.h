@@ -81,7 +81,8 @@ const std::vector<std::vector<std::vector<double>>> optimalPointsFitting {
     std::vector<std::vector<double>>{ std::vector<double>{ 0.03745, 0.0816614, 0.153566, 1.10338 } },
     std::vector<std::vector<double>>{ std::vector<double>{ 0.0544543, 0.109354, 0.289601, 1.13642 } },
     std::vector<std::vector<double>>{ std::vector<double>{ 1.52509, 1.71797, 1.86712, 1.99101 } },
-    std::vector<std::vector<double>>{ std::vector<double>{ 0.341343, 0.420049, 1.25375, 1.4306 } },
+    std::vector<std::vector<double>>{ std::vector<double>{ 0.266038, 0.498269, 1.29893, 1.40582 } },
+    // std::vector<std::vector<double>>{ std::vector<double>{ 0.341343, 0.420049, 1.25375, 1.4306 } },
     std::vector<std::vector<double>>{ std::vector<double>{ 0.335756, 0.466447, 1.27877, 1.37205 } },
     std::vector<std::vector<double>>{ std::vector<double>{ 0.690419, 0.785157, 1.50129, 1.62323 } },
 
@@ -211,7 +212,7 @@ const std::vector<std::vector<std::vector<double>>> optimalPointsFitting {
 
 const std::vector<double> optimalValuesFitting {
      -4.39812, -5.49008, -12.6529, -7.94221, -9.81698, // 0
-    -10.9344, -17.0111,   -7.12093, -6.2141, -2.76506,
+    -10.9344, -17.0111,   -7.12513 /*-7.12093*/, -6.2141, -2.76506,
 
     -17.1457, -6.55617, -15.0427, -7.66111, -4.69186, // 1
     -12.0117, -6.58987, -3.41779, -15.8898, -14.057, 
@@ -249,6 +250,8 @@ const std::vector<double> optimalValuesFitting {
     // -12.3503, -6.8715, -4.06631, -16.2776, -14.8417,
 // }
 
+std::vector<size_t> badConditioned{ 3, 10, 18, 21, 22, 24, 38, 42, 48, 57, 71, 83, 90, 96 };
+
 template <typename OptMethod = ScanningMethod<OneDimensionalSupportiveOptProblem>>
 class FittingFamilyOptProblems : public BaseFittingFamilyOptProblems<OptMethod> {
 public:
@@ -256,7 +259,7 @@ public:
     : BaseFittingFamilyOptProblems<OptMethod>(familySizeFitting, dimensionFitting, searchAreaFitting,
       alphaFitting, deltaFitting, leftBoundWindowFitting, rightBoundWindowFitting, windowPointsFitting,
       firstPointFitting, firstValuesFitting, secondPointFitting, secondValuesFitting,
-      lastPointFitting, _optMethod, _isSortX, optimalPointsFitting, optimalValuesFitting) {};
+      lastPointFitting, _optMethod, _isSortX, badConditioned, optimalPointsFitting, optimalValuesFitting) {};
 };
 
 #endif // _FITTING_TEST_FAMILY_OPT_PROBLEMS_H_

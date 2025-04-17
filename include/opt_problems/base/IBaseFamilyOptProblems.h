@@ -30,8 +30,12 @@ public:
     void getFamilyName(std::string &_familyName) const { _familyName = familyName; };
     virtual size_t getFamilySize() const { return familySize; };
 
+    // TODO: think about constancy
     virtual void setProblemNumber(size_t _problemNumber) const { problemNumber = _problemNumber; };
     size_t getProblemNumber() const { return problemNumber; };
+
+    virtual bool isAvailable() const { return true; };
+    virtual size_t getAvailableFamilySize() const { return familySize; };
 
     virtual void getOptimalPoints(std::vector<PointType> &_optimalPoints) const override {
         _optimalPoints = optimalPoints[problemNumber];

@@ -93,6 +93,9 @@ protected:
 
     bool isSortX;
 
+    std::vector<bool> wellConditioned;
+    size_t numberWellConditioned;
+
     double uDerivative(const std::vector<double> &x) const;
 
     void calcCoefficients(const std::vector<double> &x) const;
@@ -111,6 +114,7 @@ public:
         double lastShortWindowPoint = 0.0,
         const OptMethod  &_optMethod = OptMethod(),
         bool _isSortX = false,
+        std::vector<size_t> badConditioned = std::vector<size_t>{},
         const std::vector<std::vector<std::vector<double>>> &_optimalPoints = std::vector<std::vector<std::vector<double>>>{},
         const std::vector<double> &_optimalValue = std::vector<double>{},
         const std::vector<double> &_objectiveLipschitzConstant = std::vector<double>{},
@@ -129,7 +133,8 @@ public:
           coefficients(numberCoefficients),
           optMethod(_optMethod),
           u(opt::OneDimensionalSearchArea(leftBoundWideWindow, rightBoundWideWindow)),
-          isSortX(_isSortX)
+          isSortX(_isSortX), wellConditioned(familySize, true),
+          numberWellConditioned(familySize - badConditioned.size())
     {
         testPoints[0] = point(leftBoundWideWindow, 0.0);
         for (size_t i = 0; i < numberWideWindowPoints - 2; ++i) {
@@ -141,6 +146,11 @@ public:
         testPoints[numberTestPoints - 2] = point(secondShortWindowPoint, secondShortWindowValues[0]);
 
         testPoints[numberTestPoints - 1] = point(lastShortWindowPoint, 0.0);
+        
+        size_t numberBadConditioned = badConditioned.size();
+        for (size_t i = 0; i < numberBadConditioned; ++i) {
+            wellConditioned[badConditioned[i]] = false;
+        }
     };
 
     void setProblemNumber(size_t _problemNumber) const override {
@@ -184,6 +194,9 @@ public:
     };
 
     void setIsSortX(bool _isSortX) { isSortX = _isSortX; };
+
+    bool isAvailable() const override { return wellConditioned[problemNumber]; };
+    size_t getAvailableFamilySize() const override { return numberWellConditioned; };
 
     void getOptimalPoints(std::vector<std::vector<double>> &_optimalPoints) const override;
 
