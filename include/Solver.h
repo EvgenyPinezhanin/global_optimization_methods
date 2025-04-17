@@ -154,6 +154,83 @@ public:
             operationalCharacteristics[i] = std::pair<size_t, double>(k, (double)numberSuccessful / familySize);
         }
     }
+
+    template <typename TrialType>
+    void calcOperationalCharacteristicsAvailable(
+        opt::IGeneralNumericalOptMethod<TrialType, OptProblemType> &optMethod,
+        const opt::Task<OptProblemType> &task,
+        size_t kStart, size_t kFinish, size_t kStep,
+        std::vector<std::pair<size_t, double>> &operationalCharacteristics,
+        std::vector<std::pair<size_t, double>> &operationalCharacteristicsData,
+        double &workTime, bool isReport = false)
+    {
+        using Result = typename opt::IGeneralNumericalOptMethod<TrialType, OptProblemType>::Result;
+        using Report = typename opt::IGeneralNumericalOptMethod<TrialType, OptProblemType>::IReport;
+
+        size_t numberPoints = (kFinish - kStart) / kStep + 1;
+        operationalCharacteristics.resize(numberPoints);
+
+        size_t familySize = task.problem.getFamilySize();
+        std::unique_ptr<Result> result(static_cast<Result*>(optMethod.createResult()));
+        std::unique_ptr<Report> report(static_cast<Report*>(optMethod.createReport()));
+        std::vector<size_t> numberTrials(familySize);
+        operationalCharacteristicsData.resize(familySize);
+
+        size_t availableFamilySize = task.problem.getAvailableFamilySize();
+        for (size_t i = 0; i < familySize; ++i) {
+            task.problem.setProblemNumber(i);
+            if (!task.problem.isAvailable()) {
+                numberTrials[i] = kFinish + 1;
+            }
+        }
+
+        optMethod.setParameters(task.parameters);
+
+        double startTime = omp_get_wtime();
+        for (size_t i = 0; i < familySize; ++i) {
+            task.problem.setProblemNumber(i);
+            if (!task.problem.isAvailable())
+                continue;
+            
+            optMethod.setProblem(task.problem);
+
+            numberTrials[i] = optMethod.solveTest(*result) ? result->numberTrials : kFinish + 1;
+
+            operationalCharacteristicsData[i].first = numberTrials[i];
+            operationalCharacteristicsData[i].second = result->resultingError;
+
+            if (isReport) {
+                std::vector<typename OptProblemType::Point> optimalPoints;
+                task.problem.getOptimalPoints(optimalPoints);
+                auto iter = std::min_element(optimalPoints.begin(), optimalPoints.end(),
+                    [&result] (const typename OptProblemType::Point &firstPoint,
+                               const typename OptProblemType::Point &secondPoint)
+                    {
+                        return euclideanDistance(firstPoint, result->point) < euclideanDistance(secondPoint, result->point);
+                    });
+            
+                std::ostringstream output;
+                output << "Problem number = " << i << ", number trials = " << result->numberTrials
+                       << ", f(X*) - f(X) = " << task.problem.getOptimalValue() - result->value
+                       << ", f(X) = " << result->value << ", ||X* - X|| = " << euclideanDistance(*iter, result->point)
+                       << ", X = ";
+                report->printPoint(output, result->point);
+                output << ", Stopping condition: ";
+                report->printStopCondition(output, result->stoppingCondition);
+                output << "\n";
+                std::cout << output.str();
+            }
+        }
+        double endTime = omp_get_wtime();
+        workTime = endTime - startTime;
+
+        size_t numberSuccessful, k;
+        for (size_t i = 0, k = kStart; k <= kFinish; ++i, k += kStep) {
+            numberSuccessful = std::count_if(numberTrials.begin(), numberTrials.end(),
+                                             [k] (double elem) { return elem <= k; });
+            operationalCharacteristics[i] = std::pair<size_t, double>(k, (double)numberSuccessful / availableFamilySize);
+        }
+    }
 };
 
 #endif // SOLVER_H_
