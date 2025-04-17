@@ -22,8 +22,8 @@
 #include <omp.h>
 
 // #define CALC_MGGSA
-// #define CALC_DIRECT_ISRES
-#define DRAW
+#define CALC_DIRECT_ISRES
+// #define DRAW
 
 using OptMethod = GsaMethod<OneDimensionalSupportiveOptProblem>;
 using MggsaParameters = MggsaMethod<FittingFamilyOptProblems<OptMethod>>::Parameters;
@@ -34,16 +34,52 @@ using Task = opt::Task<FittingFamilyOptProblems<OptMethod>>;
 using SearchArea = opt::MultiDimensionalSearchArea;
 
 const std::vector<std::string> methodNames{ "mggsa", "direct", "isres" };
+const size_t numberMethods = methodNames.size();
 const int displayType = 2; // 0 - application, 1 - png, 2 - png(notitle)
 
-void addOperationalCharacteristics(
-    OutputFile &file,const std::vector<std::pair<size_t, double>> &operationalCharacteristics)
+void saveOperationalCharacteristics(
+    const std::string &fileNamePrefix,
+    const std::vector<std::pair<size_t, double>> &operationalCharacteristics,
+    const std::vector<std::pair<size_t, double>> &operationalCharacteristicsData,
+    const std::vector<double> &errors, const size_t familySize)
 {
+    OutputFile operationalCharacteristicsFile, operationalCharacteristicsDataFile;
+
+    operationalCharacteristicsFile.open(fileNamePrefix);
+    if (!operationalCharacteristicsFile.isOpen()) std::cerr << fileNamePrefix << " opening error\n";
+
+    operationalCharacteristicsDataFile.open(fileNamePrefix + "_data");
+    if (!operationalCharacteristicsDataFile.isOpen()) std::cerr << fileNamePrefix << "_data opening error\n";
+
     size_t operationalCharacteristicsSize = operationalCharacteristics.size();
     for (size_t j = 0; j < operationalCharacteristicsSize; ++j) {
-        file.addPoint(operationalCharacteristics[j].first, operationalCharacteristics[j].second, false);
+        operationalCharacteristicsFile.addPoint(operationalCharacteristics[j].first,
+                                                operationalCharacteristics[j].second, false);
     }
-    file.close();
+    operationalCharacteristicsFile.close();
+
+    size_t operationalCharacteristicsDataSize = operationalCharacteristicsData.size();
+    for (size_t j = 0; j < operationalCharacteristicsDataSize; ++j) {
+        operationalCharacteristicsDataFile.addPoint(operationalCharacteristicsData[j].first,
+                                                    operationalCharacteristicsData[j].second, false);
+    }
+    operationalCharacteristicsDataFile.close();
+    
+    std::ofstream addInfoFile(fileNamePrefix + "_add_info");
+
+    size_t numberSuccessful;
+
+    size_t numberErrors = errors.size();
+    for (size_t i = 0; i < numberErrors; ++i) {
+        numberSuccessful = std::count_if(operationalCharacteristicsData.begin(), operationalCharacteristicsData.end(),
+            [errors, i] (std::pair<size_t, double> elem) {
+                return elem.second <= errors[i] && elem.second != 0.0;
+            });
+        
+        addInfoFile << "Error: " << errors[i] << ", P = " << (double)numberSuccessful / familySize << "\n";
+    }
+
+    addInfoFile.close();
 }
 
 template<size_t index>
@@ -77,42 +113,31 @@ int main() {
     size_t dimension = fittingFamilyOptProblems.getDimension();
     size_t numberConstraints = fittingFamilyOptProblems.getNumberConstraints();
     size_t familySize = fittingFamilyOptProblems.getFamilySize();
+    size_t familyAvailableSize = fittingFamilyOptProblems.getAvailableFamilySize();
+    size_t familyNotAvailableSize = familySize - familyAvailableSize;
 
-    std::vector<bool> fittingFamilyOptProblemsEnable(familySize, true);
-    fittingFamilyOptProblemsEnable[3] = false;
-    fittingFamilyOptProblemsEnable[10] = false;
-    fittingFamilyOptProblemsEnable[18] = false;
-    fittingFamilyOptProblemsEnable[21] = false;
-    fittingFamilyOptProblemsEnable[22] = false;
-    fittingFamilyOptProblemsEnable[24] = false;
-    fittingFamilyOptProblemsEnable[38] = false;
-    fittingFamilyOptProblemsEnable[42] = false;
-    fittingFamilyOptProblemsEnable[48] = false;
-    fittingFamilyOptProblemsEnable[57] = false;
-    fittingFamilyOptProblemsEnable[71] = false;
-    fittingFamilyOptProblemsEnable[83] = false;
-    fittingFamilyOptProblemsEnable[90] = false;
-    fittingFamilyOptProblemsEnable[96] = false;
+    std::string familyName;
+    fittingFamilyOptProblems.getFamilyName(familyName);
 
-    size_t numberIncorrectFittingFamilyOptProblems = std::count_if(
-        fittingFamilyOptProblemsEnable.begin(), fittingFamilyOptProblemsEnable.end(),
-        [] (bool elem) { return !elem; });
-
-    size_t numberMggsaVariants = 6;
+    size_t numberMggsaVariants = 7;
+    // size_t numberMggsaVariants = 1;
     std::vector<std::vector<double>> reliability {
         std::vector<double>(numberConstraints + 1, 5.0),
+        std::vector<double>(numberConstraints + 1, 4.5),
         std::vector<double>(numberConstraints + 1, 4.0),
         std::vector<double>(numberConstraints + 1, 3.5),
         std::vector<double>(numberConstraints + 1, 3.0),
         std::vector<double>(numberConstraints + 1, 2.5),
         std::vector<double>(numberConstraints + 1, 2.0)
     };
-    // std::vector<size_t> key{ 3, 3, 3, 3, 3, 3 };
-    std::vector<size_t> key{ 1, 1, 1, 1, 1, 1 };
-    // std::vector<size_t> key{ 3, 3, 1, 1 };
+    std::vector<size_t> key{ 3, 3, 3, 3, 3, 3, 3 };
+    // std::vector<size_t> key{ 1, 1, 1, 1, 1, 1, 1 };
+    // std::vector<size_t> key{ 1 };
     std::vector<double> d(numberMggsaVariants, 0.01);
 
-    std::vector<std::vector<size_t>> K{ { 0, 20000, 25 } };
+    std::vector<std::vector<size_t>> K{ { 0, 30000, 25 } };
+
+    std::vector<double> errors{ 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0 };
 
     double error = 1.0;
     size_t maxFevals = 1000000;
@@ -126,18 +151,20 @@ int main() {
 
     Solver<FittingFamilyOptProblems<OptMethod>> solver;
     std::vector<std::pair<size_t, double>> operationalCharacteristics;
-    std::stringstream strReport, fileName;
-    OutputFile operationalCharacteristicsFile;
+    std::vector<std::pair<size_t, double>> operationalCharacteristicsData;
+    std::stringstream strReport, filesNamePrefix;
+    OutputFile operationalCharacteristicsFile, operationalCharacteristicsDataFile;
     double workTime;
 
     int chunk = 1;
 
     double totalStartTime = omp_get_wtime();
 #if defined( CALC_MGGSA )
-#pragma omp parallel for schedule(dynamic, chunk) PROC_BIND num_threads(omp_get_num_procs()) \
-        shared(reliability, key, K) firstprivate(mggsa, numberMggsaVariants, parameters, fittingFamilyOptProblems)
+#pragma omp parallel for schedule(dynamic, chunk) PROC_BIND num_threads(omp_get_num_procs() / 2) \
+        shared(reliability, key, K) \
+        firstprivate(mggsa, numberMggsaVariants, parameters, fittingFamilyOptProblems, familyName, errors, familyAvailableSize)
     for (size_t i = 0; i < numberMggsaVariants; ++i) {
-        Task task( "FittingFamily", fittingFamilyOptProblems, parameters);
+        Task task(familyName, fittingFamilyOptProblems, parameters);
         
         parameters.reliability = reliability[i];
         parameters.key = key[i];
@@ -145,8 +172,8 @@ int main() {
         task.parameters = parameters;
         mggsa.setParameters(parameters);
 
-        solver.calcOperationalCharacteristics(mggsa, task, K[0][0], K[0][1], K[0][2],
-                                              operationalCharacteristics, workTime, true);
+        solver.calcOperationalCharacteristicsAvailable(mggsa, task, K[0][0], K[0][1], K[0][2],
+                                                       operationalCharacteristics, operationalCharacteristicsData, workTime, true);
 
         strReport << task.name << ", method: " << methodNames[0] << ", error = " << parameters.error
                   << ", max trials = " << parameters.maxTrials << ", max fevals = " << parameters.maxFevals
@@ -154,14 +181,12 @@ int main() {
         std::cout << strReport.str();
         strReport.str("");
 
-        fileName << std::setprecision(2) << rootDir << "/" << methodNames[0] << "/" << task.name << "_"
-                 << parameters.key << "_" << parameters.reliability[0];
-        operationalCharacteristicsFile.open(fileName.str());
-        if (!operationalCharacteristicsFile.isOpen()) std::cerr << fileName.str() << " opening error\n";
-        fileName.str("");
+        filesNamePrefix << std::setprecision(2) << rootDir << "/" << methodNames[0] << "/" << task.name << "_"
+                        << parameters.key << "_" << parameters.reliability[0];
 
-        addOperationalCharacteristics(operationalCharacteristicsFile, operationalCharacteristics);
-        operationalCharacteristicsFile.close();
+        saveOperationalCharacteristics(filesNamePrefix.str(), operationalCharacteristics,
+                                       operationalCharacteristicsData, errors, familyAvailableSize);
+        filesNamePrefix.str("");
     }
 #endif
 
@@ -182,13 +207,15 @@ std::ostringstream output;
 SearchArea searchArea;
 
 for (size_t i = 0; i < familySize; ++i) {
-    if (!fittingFamilyOptProblemsEnable[i]) {
+    fittingFamilyOptProblems.setProblemNumber(i);
+    if (!fittingFamilyOptProblems.isAvailable()) {
         numberTrials[i] = K[0][1] + 1;
     }
 }
 
 size_t numberPoints = (K[0][1] - K[0][0]) / K[0][2] + 1;
 operationalCharacteristics.resize(numberPoints);
+operationalCharacteristicsData.resize(familySize);
 
 #if defined( CALC_DIRECT_ISRES )
     for (size_t i = 0; i < numberAlgorithms; ++i) {
@@ -213,10 +240,10 @@ operationalCharacteristics.resize(numberPoints);
 
             startTime = omp_get_wtime();
             for (size_t k = 0; k < familySize; ++k) {
-                if (!fittingFamilyOptProblemsEnable[k])
-                    continue;
-                
                 fittingFamilyOptProblems.setProblemNumber(k);
+
+                if (!fittingFamilyOptProblems.isAvailable())
+                    continue;
 
                 searchArea = fittingFamilyOptProblems.getSearchArea();
                 nlopt_set_lower_bounds(nlopt_opt_algorithm, searchArea.lowerBound.data());
@@ -232,6 +259,9 @@ operationalCharacteristics.resize(numberPoints);
 
                 numevals = nlopt_get_numevals(nlopt_opt_algorithm);
                 numberTrials[k] = result == NLOPT_STOPVAL_REACHED ? numevals : K[0][1] + 1;
+
+                operationalCharacteristicsData[k].first = numberTrials[i];
+                operationalCharacteristicsData[k].second = fittingFamilyOptProblems.getOptimalValue() - resultValue;
 
                 fittingFamilyOptProblems.getOptimalPoints(optimalPoints);
                 auto iter = std::min_element(optimalPoints.begin(), optimalPoints.end(),
@@ -273,7 +303,7 @@ operationalCharacteristics.resize(numberPoints);
                 numberSuccessful = std::count_if(numberTrials.begin(), numberTrials.end(),
                                                  [k] (double elem) { return elem <= k; });
                 operationalCharacteristics[i] = std::pair<size_t, double>(
-                    k, (double)numberSuccessful / (familySize - numberIncorrectFittingFamilyOptProblems));
+                    k, (double)numberSuccessful / (familyAvailableSize));
             }
 
             strReport << "FittingFamily" << ", method: " << methodNames[i + 1] << ", error = " << error
@@ -282,16 +312,14 @@ operationalCharacteristics.resize(numberPoints);
             strReport.str("");
 
             if (algorithms[i] == NLOPT_GN_ISRES) {
-                fileName << rootDir << "/" << methodNames[i + 1] << "/" << "FittingFamily_" << populations[j];
+                filesNamePrefix << rootDir << "/" << methodNames[i + 1] << "/" << "FittingFamily_" << populations[j];
             } else {
-                fileName << rootDir << "/" << methodNames[i + 1] << "/" << "FittingFamily";
+                filesNamePrefix << rootDir << "/" << methodNames[i + 1] << "/" << "FittingFamily";
             }
-            operationalCharacteristicsFile.open(fileName.str());
-            if (!operationalCharacteristicsFile.isOpen()) std::cerr << fileName.str() << " opening error\n";
-            fileName.str("");
-
-            addOperationalCharacteristics(operationalCharacteristicsFile, operationalCharacteristics);
-            operationalCharacteristicsFile.close();
+            
+            saveOperationalCharacteristics(filesNamePrefix.str(), operationalCharacteristics,
+                                           operationalCharacteristicsData, errors, familyAvailableSize);
+            filesNamePrefix.str("");
         }
 
         nlopt_destroy(nlopt_opt_algorithm);
@@ -307,7 +335,7 @@ operationalCharacteristics.resize(numberPoints);
         varsFile.setValueInArray("methodNames", i + 1, methodNames[i]);
     }
 
-    std::vector<size_t> numberVariantsDraw{ numberMggsaVariants - 2,
+    std::vector<size_t> numberVariantsDraw{ numberMggsaVariants,
                                             numberAlgorithmVariants[0],
                                             numberAlgorithmVariants[1] };
     varsFile.initArray("numberVariants", methodNames.size());
@@ -327,7 +355,7 @@ operationalCharacteristics.resize(numberPoints);
     };
 
     // std::vector<size_t> keyDraw{ 3, 3, 3, 3, 3, 3 };
-    std::vector<size_t> keyDraw{ 3, 1, 3, 1 };
+    std::vector<size_t> keyDraw{ 1, 1, 3, 1 };
 
     if (numberVariantsDraw[0] > 0) {
         varsFile.initArray("r", numberVariantsDraw[0]);
