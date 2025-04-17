@@ -66,6 +66,7 @@ namespace opt {
         OptProblemType problem;
 
         virtual void setResult(Result &result) const = 0;
+        virtual void setResultTest(Result &result) const = 0;
 
     public:
         IGeneralOptMethod(const OptProblemType &_problem) : problem(_problem) {};

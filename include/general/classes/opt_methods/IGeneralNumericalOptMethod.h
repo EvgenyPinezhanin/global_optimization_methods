@@ -37,15 +37,17 @@ namespace opt {
 
         struct Result : public GeneralMethod::Result {
             size_t numberTrials, numberFevals;
-            double resultingAccuracy;
+            double resultingAccuracy, resultingError;
 
             StoppingCondition stoppingCondition;
 
             Result(const typename OptProblemType::Point &_point = typename OptProblemType::Point(),
-                   double _value = 0.0, size_t _numberTrials = 0, size_t _numberFevals = 0, double _resultingAccuracy = 0.0,
+                   double _value = 0.0, size_t _numberTrials = 0, size_t _numberFevals = 0,
+                   double _resultingAccuracy = 0.0, double _resultingError = 0.0,
                    StoppingCondition _stoppingCondition = StoppingConditions::ACCURACY):
                 GeneralMethod::Result(_point, _value), numberTrials(_numberTrials), numberFevals(_numberFevals),
-                resultingAccuracy(_resultingAccuracy), stoppingCondition(_stoppingCondition) {};
+                resultingAccuracy(_resultingAccuracy), resultingError(_resultingError),
+                stoppingCondition(_stoppingCondition) {};
             ~Result() override {};
         };
 
@@ -67,7 +69,8 @@ namespace opt {
     protected:
         std::vector<TrialType> trialPoints;
 
-        double accuracy, resultingAccuracy, error;
+        double accuracy, resultingAccuracy;
+        double error, resultingError;
         size_t numberTrials, maxTrials;
         size_t numberFevals, maxFevals;
         ErrorMetrics errorMetric;
@@ -80,11 +83,13 @@ namespace opt {
         virtual typename OptProblemType::Point selectNewPoint() = 0;
 
         virtual double estimateSolution(typename OptProblemType::Point &x) const = 0;
+        virtual double estimateSolutionTest(typename OptProblemType::Point &x) const = 0;
 
         virtual bool stopConditions() = 0;
         virtual bool stopConditionsTest() = 0;
 
         void setResult(typename GeneralMethod::Result &result) const override;
+        void setResultTest(typename GeneralMethod::Result &result) const override;
 
     public:
         IGeneralNumericalOptMethod(const OptProblemType &_problem, const Parameters &parameters)
@@ -137,6 +142,7 @@ namespace opt {
         stream << "Accuracy = " << parametersCast.accuracy << "\n";
     }
 
+    // TODO: implement print result for test
     template <typename TrialType, typename OptProblemType>
     void IGeneralNumericalOptMethod<TrialType, OptProblemType>::IReport::printResultMethod(
         std::ostream &stream, const typename GeneralMethod::Result &result) const
@@ -192,6 +198,24 @@ namespace opt {
         resultCast.numberTrials = numberTrials;
         resultCast.numberFevals = numberFevals;
         resultCast.resultingAccuracy = resultingAccuracy;
+        resultCast.resultingError = resultingError;
+        resultCast.stoppingCondition = stoppingCondition;
+    }
+
+    template <typename TrialType, typename OptProblemType>
+    void IGeneralNumericalOptMethod<TrialType, OptProblemType>::setResultTest(
+        typename GeneralMethod::Result &result) const
+    {
+        typename OptProblemType::Point x;
+
+        result.value = estimateSolutionTest(x);
+        result.point = x;
+
+        auto& resultCast = static_cast<Result&>(result);
+        resultCast.numberTrials = numberTrials;
+        resultCast.numberFevals = numberFevals;
+        resultCast.resultingAccuracy = resultingAccuracy;
+        resultCast.resultingError = resultingError;
         resultCast.stoppingCondition = stoppingCondition;
     }
 }

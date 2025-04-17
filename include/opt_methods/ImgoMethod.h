@@ -80,6 +80,7 @@ protected:
     opt::IndexTrial newTrial(const typename OptProblemType::Point &x) override;
     typename OptProblemType::Point selectNewPoint() override;
     double estimateSolution(typename OptProblemType::Point &x) const override;
+    double estimateSolutionTest(typename OptProblemType::Point &x) const override;
 
     bool stopConditions() override;
     bool stopConditionsTest() override;
@@ -88,6 +89,7 @@ protected:
     void calcZValues() override;
 
     void setResult(typename GeneralMethod::Result &result) const override;
+    void setResultTest(typename GeneralMethod::Result &result) const override;
 
 public:
     ImgoMethod(const OptProblemType &_problem = OptProblemType(), const Parameters &parameters = Parameters())
@@ -444,6 +446,24 @@ double ImgoMethod<OptProblemType>::estimateSolution(typename OptProblemType::Poi
     return z;
 }
 
+// TODO: fix it
+template <typename OptProblemType>
+double ImgoMethod<OptProblemType>::estimateSolutionTest(typename OptProblemType::Point &x) const {
+    double z = std::numeric_limits<double>::infinity();
+    x = 0.0;
+
+    size_t sizeTrials = this->trialPoints.size();
+    size_t numberConstraints = this->problem.getNumberConstraints();
+    for (size_t i = 0; i < sizeTrials; ++i) {
+        if (this->trialPoints[i].nu == numberConstraints && this->trialPoints[i].z < z) {
+            z = this->trialPoints[i].z;
+            x = this->trialPoints[i].x;
+        }
+    }
+
+    return z;
+}
+
 template <typename OptProblemType>
 bool ImgoMethod<OptProblemType>::stopConditions() {
     if (std::abs(this->trialPoints[t].x - this->trialPoints[t - 1].x) <= this->accuracy) {
@@ -478,6 +498,15 @@ bool ImgoMethod<OptProblemType>::stopConditionsTest() {
 template <typename OptProblemType>
 void ImgoMethod<OptProblemType>::setResult(typename GeneralMethod::Result &result) const {
     GeneralNumericalMethod::setResult(result);
+
+    auto& resultCast = static_cast<Result&>(result);
+    resultCast.constantsEstimation = constantsEstimation;
+}
+
+// TODO: fix it
+template <typename OptProblemType>
+void ImgoMethod<OptProblemType>::setResultTest(typename GeneralMethod::Result &result) const {
+    GeneralNumericalMethod::setResultTest(result);
 
     auto& resultCast = static_cast<Result&>(result);
     resultCast.constantsEstimation = constantsEstimation;

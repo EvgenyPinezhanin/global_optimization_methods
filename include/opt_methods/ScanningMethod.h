@@ -48,11 +48,13 @@ protected:
     Trial newTrial(const typename OptProblemType::Point &x) override;
     typename OptProblemType::Point selectNewPoint() override;
     double estimateSolution(typename OptProblemType::Point &x) const override;
+    double estimateSolutionTest(typename OptProblemType::Point &x) const override;
 
     bool stopConditions() override;
     bool stopConditionsTest() override;
 
     using GeneralNumericalMethod::setResult;
+    using GeneralNumericalMethod::setResultTest;
 
 public:
     ScanningMethod(const OptProblemType &_problem = OptProblemType(),
@@ -178,6 +180,18 @@ typename OptProblemType::Point ScanningMethod<OptProblemType>::selectNewPoint() 
 
 template <typename OptProblemType>
 double ScanningMethod<OptProblemType>::estimateSolution(typename OptProblemType::Point &x) const {
+    auto iter = min_element(this->trialPoints.begin(), this->trialPoints.end(),
+        [] (const Trial &trialFirst, const Trial &trialSecond) {
+            return trialFirst.z < trialSecond.z;
+        });
+    x = iter->x;
+
+    return iter->z;
+}
+
+// TODO: fix it 
+template <typename OptProblemType>
+double ScanningMethod<OptProblemType>::estimateSolutionTest(typename OptProblemType::Point &x) const {
     auto iter = min_element(this->trialPoints.begin(), this->trialPoints.end(),
         [] (const Trial &trialFirst, const Trial &trialSecond) {
             return trialFirst.z < trialSecond.z;

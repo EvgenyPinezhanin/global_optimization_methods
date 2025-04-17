@@ -58,6 +58,7 @@ protected:
     double selectNewPoint() override;
 
     void setResult(typename GeneralMethod::Result &result) const override;
+    void setResultTest(typename GeneralMethod::Result &result) const override;
 
 public:
     PiyavskyMethod(const OptProblemType &_problem = OptProblemType(),
@@ -169,6 +170,14 @@ double PiyavskyMethod<OptProblemType>::selectNewPoint() {
 template <typename OptProblemType>
 void PiyavskyMethod<OptProblemType>::setResult(typename GeneralMethod::Result &result) const {
     ScanningMethod<OptProblemType>::setResult(result);
+
+    auto& resultCast = static_cast<Result&>(result);
+    resultCast.constantEstimation = constantEstimation;
+}
+
+template <typename OptProblemType>
+void PiyavskyMethod<OptProblemType>::setResultTest(typename GeneralMethod::Result &result) const {
+    ScanningMethod<OptProblemType>::setResultTest(result);
 
     auto& resultCast = static_cast<Result&>(result);
     resultCast.constantEstimation = constantEstimation;

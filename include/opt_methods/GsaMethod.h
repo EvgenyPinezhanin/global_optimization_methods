@@ -19,6 +19,7 @@ protected:
     void calcCharacteristic() override;
 
     using PiyavskyMethod<OptProblemType>::setResult;
+    using PiyavskyMethod<OptProblemType>::setResultTest;
 
 public:
     GsaMethod(const OptProblemType &_problem = OptProblemType(),
