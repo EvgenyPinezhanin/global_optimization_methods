@@ -2,7 +2,7 @@
 
 #include <MyMath.h>
 
-void node(int is, int& n1, int nexp, int& l, int& iq, int *iu, int *iv) {
+void node(int is, int n1, int nexp, int& l, int& iq, int *iu, int *iv) {
     // calculate iu = u[s], iv = v[s], l = l[s] by is = s
 
     int n, j, k1, k2, iff;
@@ -63,7 +63,7 @@ void mapd(double x, int m, double* y, int n, int key) {
 
     p = 0.0;
     n1 = n - 1;
-    for (nexp = 1, i = 0; i < n; nexp *= 2, i++); // nexp = 2**n
+    for (nexp = 1, i = 0; i < n; nexp *= 2, i++) {} // nexp = 2**n
     d = x;
     r = 0.5;
     it = 0;
@@ -260,7 +260,8 @@ void invmad(int m, double xp[], int kp, int *kxx, double p[], int n, int incr) {
         if (i >= n) {
             xyd(&x, m, y, n);
             x = (floor(x * mne) - floor(floor(x * mne) / nexp)) * del;
-            if (kx > kp) break;
+            // TODO: ask supervisor
+            // if (kx > kp) break;
             k = kx++; // label 9
             if (kx == 0) {
                 xp[0] = x;
