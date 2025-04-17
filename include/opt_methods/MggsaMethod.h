@@ -94,12 +94,15 @@ protected:
     double newOneDimensionX, h;
     size_t M;
 
+    double distanceToOptimum(const opt::IndexTrial &trial) const;
+
     void calcCharacteristic() override;
     void insertInSorted(const opt::IndexTrial &trial) override;
 
     opt::IndexTrial newTrial(const typename OptProblemType::Point &x) override;
     typename OptProblemType::Point selectNewPoint() override;
     double estimateSolution(typename OptProblemType::Point &x) const override;
+    double estimateSolutionTest(typename OptProblemType::Point &x) const override;
 
     void estimatingConstants() override;
     void calcZValues() override;
@@ -112,6 +115,7 @@ protected:
     bool stopConditionsTest() override;
 
     void setResult(typename GeneralMethod::Result &result) const override;
+    void setResultTest(typename GeneralMethod::Result &result) const override;
 
 public:
     MggsaMethod(const OptProblemType &_problem = OptProblemType(), const Parameters &parameters = Parameters())
@@ -291,6 +295,43 @@ void MggsaMethod<OptProblemType>::Report::printStopCondition(
     }
 }
 
+template <typename OptProblemType>
+double MggsaMethod<OptProblemType>::distanceToOptimum(const opt::IndexTrial &trial) const {
+    if (trial.nu != this->problem.getNumberConstraints()) {
+        return std::numeric_limits<double>::infinity();
+    }
+
+    if (this->errorMetric == ErrorMetrics::F_ERROR) {
+        return trial.z - this->problem.getOptimalValue();
+    } else {
+        std::vector<std::vector<double>> optimalPoints;
+        this->problem.getOptimalPoints(optimalPoints);
+
+        std::vector<double> X;
+        y(trial.x, X);
+
+        double distance = std::numeric_limits<double>::infinity(), tmpDistance;
+    
+        size_t numberOptimalPoints = optimalPoints.size();
+        if (this->errorMetric == ErrorMetrics::X_EUCLID_ERROR) {
+            for (size_t i = 0; i < numberOptimalPoints; ++i) {
+                tmpDistance = euclideanDistance(X, optimalPoints[i]);
+                if (tmpDistance < distance) {
+                    distance = tmpDistance;
+                }
+            }
+        } else if (this->errorMetric == ErrorMetrics::X_CHEBISHEV_ERROR) {
+            for (size_t i = 0; i < numberOptimalPoints; ++i) {
+                tmpDistance = chebishevDistance(X, optimalPoints[i]);
+                if (tmpDistance < distance) {
+                    distance = tmpDistance;
+                }
+            }
+        }
+
+        return distance;
+    }
+}
 
 template <typename OptProblemType>
 void MggsaMethod<OptProblemType>::calcCharacteristic() {
@@ -504,12 +545,6 @@ typename OptProblemType::Point MggsaMethod<OptProblemType>::selectNewPoint() {
 
 template <typename OptProblemType>
 double MggsaMethod<OptProblemType>::estimateSolution(typename OptProblemType::Point &x) const {
-    if (GeneralNumericalMethod::stoppingCondition == StoppingConditions::ERROR) {
-        y(this->trialPoints[t].x, x);
-
-        return this->trialPoints[t].z;
-    }
-
     double z = std::numeric_limits<double>::infinity(), oneDimensionX = 0.0;
     
     size_t sizeTrials = this->trialPoints.size();
@@ -518,6 +553,32 @@ double MggsaMethod<OptProblemType>::estimateSolution(typename OptProblemType::Po
         if (this->trialPoints[i].nu == numberConstraints && this->trialPoints[i].z < z) {
             z = this->trialPoints[i].z;
             oneDimensionX = this->trialPoints[i].x;
+        }
+    }
+    y(oneDimensionX, x);
+
+    return z;
+}
+
+template <typename OptProblemType>
+double MggsaMethod<OptProblemType>::estimateSolutionTest(typename OptProblemType::Point &x) const {
+    if (GeneralNumericalMethod::stoppingCondition == StoppingConditions::ERROR) {
+        y(this->trialPoints[t].x, x);
+
+        return this->trialPoints[t].z;
+    }
+
+    double z = std::numeric_limits<double>::infinity(), oneDimensionX = 0.0;
+    double maxResultingError = std::numeric_limits<double>::infinity(), tmpResultingError;
+    
+    size_t sizeTrials = this->trialPoints.size();
+    size_t numberConstraints = this->problem.getNumberConstraints();
+    for (size_t i = 0; i < sizeTrials; ++i) {
+        tmpResultingError = distanceToOptimum(this->trialPoints[i]);
+        if (this->trialPoints[i].nu == numberConstraints && tmpResultingError < maxResultingError) {
+            z = this->trialPoints[i].z;
+            oneDimensionX = this->trialPoints[i].x;
+            maxResultingError = tmpResultingError;
         }
     }
     y(oneDimensionX, x);
@@ -581,11 +642,11 @@ bool MggsaMethod<OptProblemType>::stopConditions() {
         this->stoppingCondition = StoppingConditions::ACCURACY;
         return true;
     }
-    if (this->numberTrials >= this->maxTrials) {
+    if (this->numberTrials > this->maxTrials) {
         this->stoppingCondition = StoppingConditions::MAXTRIALS;
         return true;
     }
-    if (this->numberFevals >= this->maxFevals) {
+    if (this->numberFevals > this->maxFevals) {
         this->stoppingCondition = StoppingConditions::MAXFEVALS;
         return true;
     }
@@ -594,31 +655,11 @@ bool MggsaMethod<OptProblemType>::stopConditions() {
 
 template <typename OptProblemType>
 bool MggsaMethod<OptProblemType>::stopConditionsTest() {
-    std::vector<std::vector<double>> optimalPoints;
-    this->problem.getOptimalPoints(optimalPoints);
-    std::vector<double> X;
-    y(this->trialPoints[t].x, X);
+    this->resultingError = distanceToOptimum(this->trialPoints[t]);
 
-    size_t numberOptimalPoints = optimalPoints.size();
-    if (this->errorMetric == ErrorMetrics::F_ERROR) {
-        if (this->trialPoints[t].z - this->problem.getOptimalValue() <= this->error) {
-            this->stoppingCondition = StoppingConditions::ERROR;
-            return true;
-        }
-    } else if (this->errorMetric == ErrorMetrics::X_EUCLID_ERROR) {
-        for (size_t i = 0; i < numberOptimalPoints; ++i) {
-            if (euclideanDistance(X, optimalPoints[i]) <= this->error) {
-                this->stoppingCondition = StoppingConditions::ERROR;
-                return true;
-            }
-        }
-    } else if (this->errorMetric == ErrorMetrics::X_CHEBISHEV_ERROR) {
-        for (size_t i = 0; i < numberOptimalPoints; ++i) {
-            if (chebishevDistance(X, optimalPoints[i]) <= this->error) {
-                this->stoppingCondition = StoppingConditions::ERROR;
-                return true;
-            }
-        }
+    if (this->resultingError <= this->error) {
+        this->stoppingCondition = StoppingConditions::ERROR;
+        return true;
     }
 
     return stopConditions();
@@ -627,6 +668,14 @@ bool MggsaMethod<OptProblemType>::stopConditionsTest() {
 template <typename OptProblemType>
 void MggsaMethod<OptProblemType>::setResult(typename GeneralMethod::Result &result) const {
     GeneralNumericalMethod::setResult(result);
+
+    auto& resultCast = static_cast<Result&>(result);
+    resultCast.constantsEstimation = constantsEstimation;
+}
+
+template <typename OptProblemType>
+void MggsaMethod<OptProblemType>::setResultTest(typename GeneralMethod::Result &result) const {
+    GeneralNumericalMethod::setResultTest(result);
 
     auto& resultCast = static_cast<Result&>(result);
     resultCast.constantsEstimation = constantsEstimation;
@@ -814,6 +863,21 @@ bool MggsaMethod<OptProblemType>::solveTest(typename GeneralMethod::Result &resu
 
         if (lastI > M) {
             M = lastI;
+        }
+    }
+
+    if (GeneralNumericalMethod::stoppingCondition != StoppingConditions::ERROR) {
+        double tmpResultingError;
+    
+        this->resultingError = std::numeric_limits<double>::infinity();
+        
+        size_t sizeTrials = this->trialPoints.size();
+        size_t numberConstraints = this->problem.getNumberConstraints();
+        for (size_t i = 0; i < sizeTrials; ++i) {
+            tmpResultingError = distanceToOptimum(this->trialPoints[i]);
+            if (this->trialPoints[i].nu == numberConstraints && tmpResultingError < this->resultingError) {
+                this->resultingError = tmpResultingError;
+            }
         }
     }
 
