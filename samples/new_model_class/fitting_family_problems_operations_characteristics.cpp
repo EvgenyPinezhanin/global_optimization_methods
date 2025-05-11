@@ -22,8 +22,9 @@
 #include <omp.h>
 
 // #define CALC_MGGSA
-#define CALC_DIRECT_ISRES
-// #define DRAW
+// #define CALC_DIRECT_ISRES
+// #define UPDATE_ADD_INFO
+#define DRAW
 
 using OptMethod = GsaMethod<OneDimensionalSupportiveOptProblem>;
 using MggsaParameters = MggsaMethod<FittingFamilyOptProblems<OptMethod>>::Parameters;
@@ -36,6 +37,36 @@ using SearchArea = opt::MultiDimensionalSearchArea;
 const std::vector<std::string> methodNames{ "mggsa", "direct", "isres" };
 const size_t numberMethods = methodNames.size();
 const int displayType = 2; // 0 - application, 1 - png, 2 - png(notitle)
+
+void updateAddInfo(const std::string &fileNamePrefix, const std::vector<double> &errors, const size_t familySize) {
+    std::vector<std::pair<size_t, double>> operationalCharacteristicsData(familySize);
+    std::ifstream operationalCharacteristicsDataFile(fileNamePrefix + "_data");
+
+    for (size_t i = 0; i < familySize; ++i) {
+        operationalCharacteristicsDataFile >> operationalCharacteristicsData[i].first
+                                           >> operationalCharacteristicsData[i].second;
+    }
+
+    operationalCharacteristicsDataFile.close();
+
+    std::ofstream addInfoFile(fileNamePrefix + "_add_info");
+
+    size_t numberSuccessful;
+
+    size_t numberErrors = errors.size();
+    for (size_t i = 0; i < numberErrors; ++i) {
+        numberSuccessful = std::count_if(operationalCharacteristicsData.begin(), operationalCharacteristicsData.end(),
+            [errors, i] (std::pair<size_t, double> elem) {
+                return std::abs(elem.second) <= errors[i] && elem.first != 0;
+            });
+
+        std::cout << numberSuccessful << "\n";
+        
+        addInfoFile << "Error: " << errors[i] << ", P = " << (double)numberSuccessful / familySize << "\n";
+    }
+
+    addInfoFile.close();
+}
 
 void saveOperationalCharacteristics(
     const std::string &fileNamePrefix,
@@ -64,22 +95,8 @@ void saveOperationalCharacteristics(
                                                     operationalCharacteristicsData[j].second, false);
     }
     operationalCharacteristicsDataFile.close();
-    
-    std::ofstream addInfoFile(fileNamePrefix + "_add_info");
 
-    size_t numberSuccessful;
-
-    size_t numberErrors = errors.size();
-    for (size_t i = 0; i < numberErrors; ++i) {
-        numberSuccessful = std::count_if(operationalCharacteristicsData.begin(), operationalCharacteristicsData.end(),
-            [errors, i] (std::pair<size_t, double> elem) {
-                return elem.second <= errors[i] && elem.second != 0.0;
-            });
-        
-        addInfoFile << "Error: " << errors[i] << ", P = " << (double)numberSuccessful / familySize << "\n";
-    }
-
-    addInfoFile.close();
+    updateAddInfo(fileNamePrefix, errors, familySize);
 }
 
 template<size_t index>
@@ -135,19 +152,19 @@ int main() {
     // std::vector<size_t> key{ 1 };
     std::vector<double> d(numberMggsaVariants, 0.01);
 
-    std::vector<std::vector<size_t>> K{ { 0, 30000, 25 } };
-
-    std::vector<double> errors{ 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0 };
-
+    std::vector<std::vector<size_t>> K{ { 0, 50000, 25 } };
+    
     double error = 1.0;
     size_t maxFevals = 1000000;
     size_t density = 11, increment = 0;
     ErrorMetrics errorMetric = ErrorMetrics::F_ERROR;
     TypeSolve typeSolve = TypeSolve::SOLVE;
     MggsaParameters parameters(0.0, error, 0, maxFevals, errorMetric, std::vector<double>{},
-                               0.0, density, 0, increment, typeSolve);
-
+        0.0, density, 0, increment, typeSolve);
+        
     MggsaMethod<FittingFamilyOptProblems<OptMethod>> mggsa;
+        
+    std::vector<double> errors{ error, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0 };
 
     Solver<FittingFamilyOptProblems<OptMethod>> solver;
     std::vector<std::pair<size_t, double>> operationalCharacteristics;
@@ -164,7 +181,7 @@ int main() {
         shared(reliability, key, K) \
         firstprivate(mggsa, numberMggsaVariants, parameters, fittingFamilyOptProblems, familyName, errors, familyAvailableSize)
     for (size_t i = 0; i < numberMggsaVariants; ++i) {
-        Task task(familyName, fittingFamilyOptProblems, parameters);
+        Task task("FittingFamily", fittingFamilyOptProblems, parameters);
         
         parameters.reliability = reliability[i];
         parameters.key = key[i];
@@ -177,12 +194,13 @@ int main() {
 
         strReport << task.name << ", method: " << methodNames[0] << ", error = " << parameters.error
                   << ", max trials = " << parameters.maxTrials << ", max fevals = " << parameters.maxFevals
+                  << ", density = " << parameters.density << ", key = " << parameters.key
                   << ", reliability = " << parameters.reliability[0] << ", time: " << workTime << "\n";
         std::cout << strReport.str();
         strReport.str("");
 
         filesNamePrefix << std::setprecision(2) << rootDir << "/" << methodNames[0] << "/" << task.name << "_"
-                        << parameters.key << "_" << parameters.reliability[0];
+                        << parameters.density << "_" << parameters.key << "_" << parameters.reliability[0];
 
         saveOperationalCharacteristics(filesNamePrefix.str(), operationalCharacteristics,
                                        operationalCharacteristicsData, errors, familyAvailableSize);
@@ -192,8 +210,8 @@ int main() {
 
 size_t numberAlgorithms = 2;
 std::vector<nlopt_algorithm> algorithms{ NLOPT_GN_ORIG_DIRECT, NLOPT_GN_ISRES };
-std::vector<size_t> numberAlgorithmVariants{ 1, 3 };
-std::vector<unsigned int> populations{ 15, 20, 25 };
+std::vector<size_t> numberAlgorithmVariants{ 1, 5 };
+std::vector<unsigned int> populations{ 15, 20, 25, 30, 35 };
 nlopt_result result;
 
 double startTime, endTime;
@@ -260,7 +278,7 @@ operationalCharacteristicsData.resize(familySize);
                 numevals = nlopt_get_numevals(nlopt_opt_algorithm);
                 numberTrials[k] = result == NLOPT_STOPVAL_REACHED ? numevals : K[0][1] + 1;
 
-                operationalCharacteristicsData[k].first = numberTrials[i];
+                operationalCharacteristicsData[k].first = numberTrials[k];
                 operationalCharacteristicsData[k].second = fittingFamilyOptProblems.getOptimalValue() - resultValue;
 
                 fittingFamilyOptProblems.getOptimalPoints(optimalPoints);
@@ -328,6 +346,13 @@ operationalCharacteristicsData.resize(familySize);
     double totalEndTime = omp_get_wtime();
     std::cout << "Total time: " << totalEndTime - totalStartTime << std::endl;
 
+#if defined( UPDATE_ADD_INFO )
+    std::ostringstream updateFilesNamePrefix;
+    // updateFilesNamePrefix << rootDir << "/" << methodNames[2] << "/FittingFamily_" << populations[2];
+    updateFilesNamePrefix << rootDir << "/" << methodNames[1] << "/FittingFamily";
+    updateAddInfo(updateFilesNamePrefix.str(), errors, familyAvailableSize);
+#endif
+
     varsFile.setVariable("familyName", "FittingFamily");
     varsFile.setVariable("numberMethods", methodNames.size(), false);
     varsFile.initArray("methodNames", methodNames.size());
@@ -335,29 +360,39 @@ operationalCharacteristicsData.resize(familySize);
         varsFile.setValueInArray("methodNames", i + 1, methodNames[i]);
     }
 
-    std::vector<size_t> numberVariantsDraw{ numberMggsaVariants,
+    std::vector<size_t> numberVariantsDraw{ numberMggsaVariants - 1,
                                             numberAlgorithmVariants[0],
-                                            numberAlgorithmVariants[1] };
+                                            numberAlgorithmVariants[1] - 2};
+    
     varsFile.initArray("numberVariants", methodNames.size());
     for (size_t i = 0; i < methodNames.size(); i++) {
         varsFile.setValueInArray("numberVariants", i + 1, numberVariantsDraw[i], false);
     }
     
     std::vector<std::vector<double>> reliabilityDraw {
+        std::vector<double>(numberConstraints + 1, 2.0),
+        // std::vector<double>(numberConstraints + 1, 2.5),
+        std::vector<double>(numberConstraints + 1, 3.0),
+        // std::vector<double>(numberConstraints + 1, 3.5),
+        std::vector<double>(numberConstraints + 1, 4.0),
+        // std::vector<double>(numberConstraints + 1, 4.5),
         // std::vector<double>(numberConstraints + 1, 5.0),
-        // std::vector<double>(numberConstraints + 1, 4.0),
-        std::vector<double>(numberConstraints + 1, 3.5),
-        std::vector<double>(numberConstraints + 1, 3.5),
-        // std::vector<double>(numberConstraints + 1, 3.0),
-        std::vector<double>(numberConstraints + 1, 2.5),
-        std::vector<double>(numberConstraints + 1, 2.5),
-        // std::vector<double>(numberConstraints + 1, 2.0)
+        std::vector<double>(numberConstraints + 1, 2.0),
+        // std::vector<double>(numberConstraints + 1, 2.5),
+        std::vector<double>(numberConstraints + 1, 3.0),
+        // std::vector<double>(numberConstraints + 1, 3.5),
+        std::vector<double>(numberConstraints + 1, 4.0),
+        // std::vector<double>(numberConstraints + 1, 4.5),
+        // std::vector<double>(numberConstraints + 1, 5.0),
     };
 
-    // std::vector<size_t> keyDraw{ 3, 3, 3, 3, 3, 3 };
-    std::vector<size_t> keyDraw{ 1, 1, 3, 1 };
+    std::vector<size_t> keyDraw{ 1, 1, 1, 3, 3, 3 };
+    // std::vector<size_t> keyDraw{ 3, 3, 3, 3, 3, 3, 3 };
+    // std::vector<size_t> keyDraw{ 1, 1, 1, 1, 1, 1, 1 };
 
     if (numberVariantsDraw[0] > 0) {
+        size_t densityDraw = density;
+        varsFile.setVariable("density", densityDraw);
         varsFile.initArray("r", numberVariantsDraw[0]);
         varsFile.initArray("key", numberVariantsDraw[0]);
         for (int i = 0; i < numberVariantsDraw[0]; ++i) {
@@ -366,10 +401,12 @@ operationalCharacteristicsData.resize(familySize);
         }
     }
 
+    std::vector<unsigned int> populationsDraw{ 15, 25, 35 };
+
     if (numberVariantsDraw[2] > 0) {
         varsFile.initArray("population", numberVariantsDraw[2]);
         for (size_t i = 0; i < numberVariantsDraw[2]; ++i) {
-            varsFile.setValueInArray("population", i + 1, populations[i]);
+            varsFile.setValueInArray("population", i + 1, populationsDraw[i]);
         }
     }
 
