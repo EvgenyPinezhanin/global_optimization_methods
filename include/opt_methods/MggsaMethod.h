@@ -302,7 +302,7 @@ double MggsaMethod<OptProblemType>::distanceToOptimum(const opt::IndexTrial &tri
     }
 
     if (this->errorMetric == ErrorMetrics::F_ERROR) {
-        return trial.z - this->problem.getOptimalValue();
+        return std::abs(trial.z - this->problem.getOptimalValue());
     } else {
         std::vector<std::vector<double>> optimalPoints;
         this->problem.getOptimalPoints(optimalPoints);
