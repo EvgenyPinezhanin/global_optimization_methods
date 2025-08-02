@@ -12,12 +12,10 @@
 #include <opt_problems/base/IBaseConstrainedFamilyOptProblems.h>
 #include <MyMath.h>
 
-// #define DEBUG
-
-// #define TIKHONOV_REGULARIZATION
+#define TIKHONOV_REGULARIZATION
 #if defined( TIKHONOV_REGULARIZATION )
     #include <opt_problems/base/IBaseConstrainedOptProblem.h>
-    #include <opt_methods/MggsaMethod.h>
+    #include <nlopt.h>
 #endif
 
 class OneDimensionalSupportiveOptProblem : public IBaseOptProblem<opt::OneDimensionalSearchArea, double> {
@@ -70,6 +68,8 @@ public:
     double computeObjectiveFunction(const std::vector<double> &x) const override;
     double computeConstraintFunction(const std::vector<double> &x, size_t index) const override;
 };
+
+double tikhonov_functional(unsigned n, const double* x, double* grad, void* f_data);
 #endif
 
 template<typename OptMethod>
@@ -176,17 +176,7 @@ public:
 
     size_t getNumberCoefficients() const { return numberCoefficients; };
 
-#if defined( MPFR )
-    void getCoefficients(std::vector<double> &_coefficients) const {
-        size_t size = coefficients.size();
-        _coefficients.resize(coefficients.size());
-        for (size_t i = 0; i < size; ++i) {
-            _coefficients[i] = coefficients[i].toDouble();
-        }
-    };
-#else
     void getCoefficients(std::vector<double> &_coefficients) const { _coefficients = coefficients; };
-#endif
 
     void getOptMethod(OptMethod &_optMethod) const { _optMethod = optMethod; };
     void setOptMethod(const OptMethod &_optMethod) {
@@ -214,11 +204,7 @@ double BaseFittingFamilyOptProblems<OptMethod>::uDerivative(const std::vector<do
                   coefficients[2 * i + 1] * x[i] * sin_func(x[i] * testPoints[numberTestPoints - 1].x[0]) ;
     }
 
-#if defined( MPFR )
-    return result.toDouble();
-#else
     return result;
-#endif
 }
 
 template<typename OptMethod>
@@ -246,65 +232,36 @@ void BaseFittingFamilyOptProblems<OptMethod>::calcCoefficients(const std::vector
         }
     }
 
-#if defined( DEBUG )
-    std::cout << "SLE:\n";
-    for (size_t i = 0; i < numberCoefficients; ++i) {
-        for (size_t j = 0; j < numberCoefficients; ++j) {
-            std::cout << std::setprecision(10) << A[i][j] << " ";
-        }
-        std::cout << std::setprecision(10)  << B[i] << "\n";
-    }
-#endif
-
 #if defined( TIKHONOV_REGULARIZATION )
-    using Parameters = MggsaMethod<TikhonovFunctional>::Parameters;
-    using Result = MggsaMethod<TikhonovFunctional>::GeneralNumericalMethod::Result;
-    using Report = MggsaMethod<TikhonovFunctional>::Report;
-    using TypeSolve = MggsaMethod<TikhonovFunctional>::TypeSolve;
+    nlopt_algorithm algorithm = NLOPT_LN_NELDERMEAD;
+    nlopt_opt nlopt_org_neldermead = nlopt_create(algorithm, numberCoefficients);
 
-    double alpha = 0.0;
-    double lowerBound = -10.0;
-    double upperBound = 10.0;
+    double alpha = 0.001;
+    double lowerBound = -1000.0;
+    double upperBound = 1000.0;
     opt::MultiDimensionalSearchArea searchArea(numberCoefficients, lowerBound, upperBound);
+
+    nlopt_set_lower_bounds(nlopt_org_neldermead, searchArea.lowerBound.data());
+    nlopt_set_upper_bounds(nlopt_org_neldermead, searchArea.upBound.data());
+
     TikhonovFunctional tikhonovFunctional(searchArea, alpha, A, B);
 
-    double accuracy = 0.01, error = 0.0, d = 0.01;
-    std::vector<double> reliability(1, 5.0);
-    size_t maxTrials = 40000, maxFevals = 1000000000;
-    size_t density = 12, key = 1, increment = 0;
-    TypeSolve typeSolve = TypeSolve::SOLVE;
-    Parameters mggsaParameters(accuracy, error, maxTrials, maxFevals, reliability,
-                               d, density, key, increment, typeSolve);
+    nlopt_set_min_objective(nlopt_org_neldermead, tikhonov_functional, &tikhonovFunctional);
 
-    MggsaMethod<TikhonovFunctional> mggsa;
-    mggsa.setParameters(mggsaParameters);
-    mggsa.setProblem(tikhonovFunctional);
+    size_t maxEval = 1000;
 
-    std::unique_ptr<Result> result(static_cast<Result*>(mggsa.createResult()));
-    mggsa.solve(*result);
+    nlopt_set_maxeval(nlopt_org_neldermead, maxEval);
 
-    coefficients = result->point;
+    double xtol_rel = 1e-4;
+    nlopt_set_xtol_rel(nlopt_org_neldermead, xtol_rel);
 
-    #if defined( DEBUG )
-        std::cout << "Coeffs: ";    
-        for (size_t k = 0; k < numberCoefficients; ++k) {
-            std::cout << coefficients[k] << " ";
-        }
-        std::cout << "\n";
-        std::cout << "Value: " << tikhonovFunctional.computeObjectiveFunction(coefficients) << "\n";
-    #endif
+    nlopt_result result;
+    double resultValue;
+    result = nlopt_optimize(nlopt_org_neldermead, coefficients.data(), &resultValue);
 #else
     minimizer.setA(A);
     minimizer.setB(B);
     minimizer.solve(coefficients);
-
-    #if defined( DEBUG )
-        std::cout << "Coeffs: ";    
-        for (size_t k = 0; k < numberCoefficients; ++k) {
-            std::cout << coefficients[k] << " ";
-        }
-        std::cout << "\n";
-    #endif
 #endif
 }
 
@@ -360,15 +317,7 @@ double BaseFittingFamilyOptProblems<OptMethod>::computeConstraintFunction(const 
     } else if (index >= dimension - 1 && index < dimension + 2) {
         calcCoefficients(x);
 
-    #if defined( MPFR )
-        std::vector<real_number> x_real(dimension);
-        for (size_t i = 0; i < dimension; ++i) {
-            x_real[i] = x[i];
-        }
-        u.setOmega(x_real);
-    #else
         u.setOmega(x);
-    #endif
 
         u.setCoefficients(coefficients);
         u.setTypeProblem(OneDimensionalSupportiveOptProblem::TypeProblem::MIN);
@@ -378,25 +327,9 @@ double BaseFittingFamilyOptProblems<OptMethod>::computeConstraintFunction(const 
     } else if (index == dimension + 2) {
         calcCoefficients(x);
 
-    #if defined( MPFR )
-        std::vector<real_number> x_real(dimension);
-        for (size_t i = 0; i < dimension; ++i) {
-            x_real[i] = x[i];
-        }
-        u.setOmega(x_real);
-    #else
         u.setOmega(x);
-    #endif
 
         u.setCoefficients(coefficients);
-
-    #if defined( DEBUG )
-        std::cout << "Constraint: " << index << " Coeffs: ";    
-        for (size_t k = 0; k < numberCoefficients; ++k) {
-            std::cout << coefficients[k] << " ";
-        }
-        std::cout << "\n";
-    #endif
 
         using Result = typename OptMethod::Result;
         std::unique_ptr<Result> result(static_cast<Result*>(optMethod.createResult()));
@@ -410,25 +343,9 @@ double BaseFittingFamilyOptProblems<OptMethod>::computeConstraintFunction(const 
     } else if (index == dimension + 3) {
         calcCoefficients(x);
 
-    #if defined( MPFR )
-        std::vector<real_number> x_real(dimension);
-        for (size_t i = 0; i < dimension; ++i) {
-            x_real[i] = x[i];
-        }
-        u.setOmega(x_real);
-    #else
         u.setOmega(x);
-    #endif
 
         u.setCoefficients(coefficients);
-
-    #if defined( DEBUG )
-        std::cout << "Constraint: " << index << " Coeffs: ";    
-        for (size_t k = 0; k < numberCoefficients; ++k) {
-            std::cout << coefficients[k] << " ";
-        }
-        std::cout << "\n";
-    #endif
 
         using Result = typename OptMethod::Result;
         std::unique_ptr<Result> result(static_cast<Result*>(optMethod.createResult()));

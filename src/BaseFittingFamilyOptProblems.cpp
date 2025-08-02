@@ -44,4 +44,15 @@ double TikhonovFunctional::computeConstraintFunction(const std::vector<double> &
         return std::numeric_limits<double>::quiet_NaN();
     }
 }
+
+double tikhonov_functional(unsigned n, const double* x, double* grad, void* f_data) {
+    TikhonovFunctional *tikhonov_functional_data = reinterpret_cast<TikhonovFunctional*>(f_data);
+
+    std::vector<double> x_vector(n);
+    for (size_t i = 0; i < n; ++i) {
+        x_vector[i] = x[i];
+    }
+
+    return tikhonov_functional_data->computeObjectiveFunction(x_vector);
+}
 #endif
