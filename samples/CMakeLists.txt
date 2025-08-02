@@ -15,7 +15,7 @@ foreach(sample_filename ${samples_list})
   get_filename_component(sample ${sample_filename} NAME_WE)
 
   add_executable(${sample} ${sample_filename})
-  target_link_libraries(${sample} ${PROJECT_LIBRARY} ${GCGEN_LIB_NAME} ${GCGEN_LIB_FAM_NAME} ${DIRECT_LIB_NAME})
+  target_link_libraries(${sample} ${PROJECT_LIBRARY} ${GCGEN_LIB_NAME} ${GCGEN_LIB_FAM_NAME})
   target_link_libraries(${sample} OpenMP::OpenMP_CXX nlopt)
   set_target_properties(${sample} PROPERTIES
     OUTPUT_NAME "${sample}"

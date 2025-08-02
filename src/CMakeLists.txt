@@ -10,13 +10,8 @@ if (NOT Eigen3_FOUND)
   message(FATAL_ERROR "Package Eigen3 required, but not found!")
 endif()
 
-find_package(MPFR REQUIRED)
-if (NOT MPFR_FOUND)
-  message(FATAL_ERROR "Package MPFR required, but not found!")
-endif()
-
 add_library(${target} STATIC ${srcs} ${hdrs})
-target_link_libraries(${target} ${LIBRARY_DEPS} Eigen3::Eigen ${MPFR_LIBRARIES})
+target_link_libraries(${target} ${LIBRARY_DEPS} Eigen3::Eigen)
 
 # REPORT
 message( STATUS "")

@@ -14,9 +14,6 @@ set(PROJECT_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 include_directories("${PROJECT_INCLUDE}")
 
-# Add mpreal
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/mpreal")
-
 # OUTPUT DIR
 if(CMAKE_BUILD_TYPE STREQUAL Release)
   set(OUT_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE})
@@ -79,12 +76,8 @@ if (GPROF)
 endif()
 
 # GCGEN
-add_subdirectory(GCGen)
+add_subdirectory(third_party/GCGen)
 include_directories(${GCGEN_INC_NAME})
-
-# DIRECT
-add_subdirectory(DiRect)
-include_directories(${DIRECT_INC_NAME})
 
 # BUILD
 add_subdirectory(src)
