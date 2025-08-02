@@ -38,7 +38,9 @@ const std::vector<std::string> methodNames{ "mggsa", "direct", "isres" };
 const size_t numberMethods = methodNames.size();
 const int displayType = 2; // 0 - application, 1 - png, 2 - png(notitle)
 
-void updateAddInfo(const std::string &fileNamePrefix, const std::vector<double> &errors, const size_t familySize) {
+void updateAddInfo(const std::string &fileNamePrefix, const std::vector<double> &errors,
+                   size_t Kmax, const size_t familySize)
+{
     std::vector<std::pair<size_t, double>> operationalCharacteristicsData(familySize);
     std::ifstream operationalCharacteristicsDataFile(fileNamePrefix + "_data");
 
@@ -56,11 +58,9 @@ void updateAddInfo(const std::string &fileNamePrefix, const std::vector<double> 
     size_t numberErrors = errors.size();
     for (size_t i = 0; i < numberErrors; ++i) {
         numberSuccessful = std::count_if(operationalCharacteristicsData.begin(), operationalCharacteristicsData.end(),
-            [errors, i] (std::pair<size_t, double> elem) {
-                return std::abs(elem.second) <= errors[i] && elem.first != 0;
+            [errors, i, Kmax] (std::pair<size_t, double> elem) {
+                return -elem.second <= errors[i] && elem.first != 0 && elem.first <= Kmax;
             });
-
-        std::cout << numberSuccessful << "\n";
         
         addInfoFile << "Error: " << errors[i] << ", P = " << (double)numberSuccessful / familySize << "\n";
     }
@@ -72,7 +72,7 @@ void saveOperationalCharacteristics(
     const std::string &fileNamePrefix,
     const std::vector<std::pair<size_t, double>> &operationalCharacteristics,
     const std::vector<std::pair<size_t, double>> &operationalCharacteristicsData,
-    const std::vector<double> &errors, const size_t familySize)
+    const std::vector<double> &errors, size_t Kmax, const size_t familySize)
 {
     OutputFile operationalCharacteristicsFile, operationalCharacteristicsDataFile;
 
@@ -96,7 +96,7 @@ void saveOperationalCharacteristics(
     }
     operationalCharacteristicsDataFile.close();
 
-    updateAddInfo(fileNamePrefix, errors, familySize);
+    updateAddInfo(fileNamePrefix, errors, Kmax, familySize);
 }
 
 template<size_t index>
@@ -137,19 +137,27 @@ int main() {
     fittingFamilyOptProblems.getFamilyName(familyName);
 
     size_t numberMggsaVariants = 7;
-    // size_t numberMggsaVariants = 1;
     std::vector<std::vector<double>> reliability {
-        std::vector<double>(numberConstraints + 1, 5.0),
-        std::vector<double>(numberConstraints + 1, 4.5),
-        std::vector<double>(numberConstraints + 1, 4.0),
-        std::vector<double>(numberConstraints + 1, 3.5),
-        std::vector<double>(numberConstraints + 1, 3.0),
+        std::vector<double>(numberConstraints + 1, 2.0),
         std::vector<double>(numberConstraints + 1, 2.5),
-        std::vector<double>(numberConstraints + 1, 2.0)
+        std::vector<double>(numberConstraints + 1, 3.0),
+        std::vector<double>(numberConstraints + 1, 3.5),
+        std::vector<double>(numberConstraints + 1, 4.0),
+        std::vector<double>(numberConstraints + 1, 4.5),
+        std::vector<double>(numberConstraints + 1, 5.0),
+
+        // std::vector<double>(numberConstraints + 1, 2.0),
+        // std::vector<double>(numberConstraints + 1, 2.5),
+        // std::vector<double>(numberConstraints + 1, 3.0),
+        // std::vector<double>(numberConstraints + 1, 3.5),
+        // std::vector<double>(numberConstraints + 1, 4.0),
+        // std::vector<double>(numberConstraints + 1, 4.5),
+        // std::vector<double>(numberConstraints + 1, 5.0),
     };
+
+    // std::vector<size_t> key{ 1, 1, 1, 3, 3, 3 };
     std::vector<size_t> key{ 3, 3, 3, 3, 3, 3, 3 };
     // std::vector<size_t> key{ 1, 1, 1, 1, 1, 1, 1 };
-    // std::vector<size_t> key{ 1 };
     std::vector<double> d(numberMggsaVariants, 0.01);
 
     std::vector<std::vector<size_t>> K{ { 0, 50000, 25 } };
@@ -211,6 +219,7 @@ int main() {
 size_t numberAlgorithms = 2;
 std::vector<nlopt_algorithm> algorithms{ NLOPT_GN_ORIG_DIRECT, NLOPT_GN_ISRES };
 std::vector<size_t> numberAlgorithmVariants{ 1, 5 };
+// std::vector<unsigned int> populations{ 15, 25, 35 };
 std::vector<unsigned int> populations{ 15, 20, 25, 30, 35 };
 nlopt_result result;
 
@@ -348,9 +357,12 @@ operationalCharacteristicsData.resize(familySize);
 
 #if defined( UPDATE_ADD_INFO )
     std::ostringstream updateFilesNamePrefix;
-    // updateFilesNamePrefix << rootDir << "/" << methodNames[2] << "/FittingFamily_" << populations[2];
     updateFilesNamePrefix << rootDir << "/" << methodNames[1] << "/FittingFamily";
-    updateAddInfo(updateFilesNamePrefix.str(), errors, familyAvailableSize);
+    // for (size_t i = 0; i < 5; ++i) {
+        // updateFilesNamePrefix << rootDir << "/" << methodNames[2] << "/FittingFamily_" << populations[i];
+        updateAddInfo(updateFilesNamePrefix.str(), errors, K[0][1], familyAvailableSize);
+        updateFilesNamePrefix.str("");
+    // }
 #endif
 
     varsFile.setVariable("familyName", "FittingFamily");
@@ -360,9 +372,9 @@ operationalCharacteristicsData.resize(familySize);
         varsFile.setValueInArray("methodNames", i + 1, methodNames[i]);
     }
 
-    std::vector<size_t> numberVariantsDraw{ numberMggsaVariants - 1,
+    std::vector<size_t> numberVariantsDraw{ numberMggsaVariants - 5,
                                             numberAlgorithmVariants[0],
-                                            numberAlgorithmVariants[1] - 2};
+                                            numberAlgorithmVariants[1] - 4};
     
     varsFile.initArray("numberVariants", methodNames.size());
     for (size_t i = 0; i < methodNames.size(); i++) {
@@ -370,23 +382,24 @@ operationalCharacteristicsData.resize(familySize);
     }
     
     std::vector<std::vector<double>> reliabilityDraw {
-        std::vector<double>(numberConstraints + 1, 2.0),
+        // std::vector<double>(numberConstraints + 1, 2.0),
         // std::vector<double>(numberConstraints + 1, 2.5),
         std::vector<double>(numberConstraints + 1, 3.0),
         // std::vector<double>(numberConstraints + 1, 3.5),
-        std::vector<double>(numberConstraints + 1, 4.0),
+        // std::vector<double>(numberConstraints + 1, 4.0),
         // std::vector<double>(numberConstraints + 1, 4.5),
         // std::vector<double>(numberConstraints + 1, 5.0),
-        std::vector<double>(numberConstraints + 1, 2.0),
+        // std::vector<double>(numberConstraints + 1, 2.0),
         // std::vector<double>(numberConstraints + 1, 2.5),
         std::vector<double>(numberConstraints + 1, 3.0),
         // std::vector<double>(numberConstraints + 1, 3.5),
-        std::vector<double>(numberConstraints + 1, 4.0),
+        // std::vector<double>(numberConstraints + 1, 4.0),
         // std::vector<double>(numberConstraints + 1, 4.5),
         // std::vector<double>(numberConstraints + 1, 5.0),
     };
 
-    std::vector<size_t> keyDraw{ 1, 1, 1, 3, 3, 3 };
+    std::vector<size_t> keyDraw{ 1, 3 };
+    // std::vector<size_t> keyDraw{ 1, 1, 1, 3, 3, 3 };
     // std::vector<size_t> keyDraw{ 3, 3, 3, 3, 3, 3, 3 };
     // std::vector<size_t> keyDraw{ 1, 1, 1, 1, 1, 1, 1 };
 
@@ -401,7 +414,8 @@ operationalCharacteristicsData.resize(familySize);
         }
     }
 
-    std::vector<unsigned int> populationsDraw{ 15, 25, 35 };
+    std::vector<unsigned int> populationsDraw{ 35 };
+    // std::vector<unsigned int> populationsDraw{ 15, 25, 35 };
 
     if (numberVariantsDraw[2] > 0) {
         varsFile.initArray("population", numberVariantsDraw[2]);

@@ -104,7 +104,7 @@ int main() {
 
     double total_start_time = omp_get_wtime();
 #if defined( CALC )
-    OutputFile vars_file("output_data/sample_fitting_problem/vars.txt");
+    OutputFile vars_file("output_data/new_model_class/sample_fitting_problem/vars.txt");
     if (!vars_file.isOpen()) std::cerr << "vars_file opening error\n";
 
     vars_file.setVariable("numberMethods", number_methods, false);
@@ -119,7 +119,7 @@ int main() {
     double start_time, end_time, work_time;
 
     for (size_t i = 0; i < number_methods; ++i) {
-        trialsFile.open("output_data/sample_fitting_problem/" + method_names[i] + "_trials.txt");
+        trialsFile.open("output_data/new_model_class/sample_fitting_problem/" + method_names[i] + "_trials.txt");
         if (!trialsFile.isOpen()) std::cerr << "trialsFile opening error\n";
 
         methods[i]->setParameters(parameters);
@@ -159,7 +159,7 @@ int main() {
 
     vars_file.close();
 
-    OutputFile test_points_file("output_data/sample_fitting_problem/test_points.txt");
+    OutputFile test_points_file("output_data/new_model_class/sample_fitting_problem/test_points.txt");
     if (!test_points_file.isOpen()) std::cerr << "test_points_file opening error\n";
 
     for (int i = 0; i < number_test_points; ++i) {
@@ -168,7 +168,7 @@ int main() {
 
     test_points_file.close();
 
-    OutputFile function_points_file("output_data/sample_fitting_problem/function_points.txt");
+    OutputFile function_points_file("output_data/new_model_class/sample_fitting_problem/function_points.txt");
     if (!function_points_file.isOpen()) std::cerr << "function_points_file opening error\n";
 
     double a = sample_test_problem.getSearchArea().lowerBound;

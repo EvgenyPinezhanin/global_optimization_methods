@@ -21,7 +21,8 @@
 #include <omp.h>
 
 // #define SLICES
-#define SOLUTION
+// #define SOLUTION
+#define MULTI_CURVES
 #define DRAW
 
 using OptMethod = GsaMethod<OneDimensionalSupportiveOptProblem>;
@@ -35,7 +36,7 @@ using TypeSolve = MggsaMethod<FittingFamilyOptProblems<OptMethod>>::TypeSolve;
 const std::string methodName = "mggsa";
 
 const size_t displayType = 1; // 0 - application(only u(t)), 1 - png, 2 - png(notitle)
-const size_t graphType = 1; // 0 - slices, 1 - solution, 2 - multi curves
+const size_t graphType = 2; // 0 - slices, 1 - solution, 2 - multi curves
 const size_t problemNumber = 2; // 0, 1, ..., familySize - 1 (only for application type)
 
 int main() {
@@ -219,7 +220,7 @@ int main() {
 #endif
 
 #if defined( MULTI_CURVES )
-    OutputFile varsFile("output_data/fitting_family_problems/vars.txt");
+    OutputFile varsFile("output_data/new_model_class/fitting_family_problems_plot/vars.txt");
     if (!varsFile.isOpen()) std::cerr << "vars.txt opening error\n";
 
     size_t numberCurves = 4;

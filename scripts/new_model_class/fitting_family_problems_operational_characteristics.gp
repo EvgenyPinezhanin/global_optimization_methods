@@ -13,7 +13,7 @@ set linetype  6  lc rgb "dark-yellow" lw 2 dt 1
 set linetype  7  lc rgb "dark-violet" lw 2 dt 1
 set linetype  8  lc rgb "cyan"        lw 2 dt 1
 
-set linetype  9  lc rgb "red"         lw 2 dt 2
+set linetype  9  lc rgb "blue"         lw 2 dt 2
 set linetype 10  lc rgb "green"       lw 2 dt 2
 set linetype 11  lc rgb "blue"        lw 2 dt 2
 set linetype 12  lc rgb "orange"      lw 2 dt 2
@@ -22,7 +22,7 @@ set linetype 14  lc rgb "dark-yellow" lw 2 dt 2
 set linetype 15  lc rgb "dark-violet" lw 2 dt 2
 set linetype 16  lc rgb "cyan"        lw 2 dt 2
 
-set linetype 17  lc rgb "red"         lw 2 dt 4
+set linetype 17  lc rgb "dark-violet"         lw 2 dt 4
 set linetype 18  lc rgb "green"       lw 2 dt 4
 set linetype 19  lc rgb "blue"        lw 2 dt 4
 set linetype 20  lc rgb "orange"      lw 2 dt 4
@@ -33,7 +33,7 @@ set linetype 24  lc rgb "cyan"        lw 2 dt 4
 
 set linetype cycle 24
 
-fontName = "Helvetica, 16"
+fontName = "Helvetica, 20"
 
 set grid
 
@@ -42,8 +42,9 @@ set ylabel "P_s(K)" font fontName offset -1
 
 set tics font fontName
 
-set key box inside right bottom
+set key inside right bottom
 set key font fontName spacing 1.3
+
 
 title(familyName) = sprintf("Operational characteristics on the %s", familyName)
 titlePng(familyName) = ARG1 == 1 ? title(familyName) : sprintf("")
@@ -69,7 +70,7 @@ if (ARG1 == 0) {
     bind all "alt-End" "exit gnuplot"
     pause mouse close
 } else {
-    set terminal pngcairo size 1440, 900 font "Helvetica, 16"
+    set terminal pngcairo size 1440, 700 font fontName
     system "mkdir -p output_graph/new_model_class/".sampleName
 
     set lmargin 10

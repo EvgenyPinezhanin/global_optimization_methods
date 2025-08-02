@@ -1,13 +1,13 @@
 #!/usr/bin/gnuplot
 
-rootDir = "output_data/sample_fitting_problem"
+rootDir = "output_data/new_model_class/sample_fitting_problem"
 
 load rootDir."/vars.txt"
 
 functionPointsFile = rootDir."/function_points.txt"
 testPointsFile = rootDir."/test_points.txt"
 
-fontName = "Helvetica, 16"
+fontName = "Helvetica, 22"
 
 set sample 500
 
@@ -18,7 +18,7 @@ set ylabel "u(t)" font fontName offset -1
 
 set tics font fontName
 
-set key box outside right top
+set key inside right bottom
 set key font fontName spacing 1.3
 
 title(displayType, type, method) = displayType != 2 ? \
@@ -61,12 +61,12 @@ if (ARG1 == 0) {
     bind all "alt-End" "exit gnuplot"
     pause mouse close
 } else {
-    set terminal pngcairo size 1640, 950 font fontName
+    set terminal pngcairo size 1640, 850 font fontName
 
     system "mkdir -p output_graph/sample_fitting_problem"
 
     set lmargin 12
-    set rmargin 18
+    set rmargin 8
     set tmargin 3
     set bmargin 3
 
@@ -83,7 +83,7 @@ if (ARG1 == 0) {
 
                 set xrange [ARG4 : ARG5]
 
-                plot u(j, x) title "u(t)", \
+                plot u(j, x) lw 3 title "u(t)", \
                      testPointsFile ls 8 lc rgb "green" lw 6 title "test points"
             } else {
                 trialsFile = rootDir."/".methodNames[j + 1]."_trials.txt"
