@@ -217,6 +217,9 @@ public:
                 report->printPoint(output, result->point);
                 output << ", Stopping condition: ";
                 report->printStopCondition(output, result->stoppingCondition);
+                if (task.problem.getOptimalValue() - result->value > 0.0) {
+                    output << ", FIX OPT SOLUTION!!!";
+                }
                 output << "\n";
                 std::cout << output.str();
             }
